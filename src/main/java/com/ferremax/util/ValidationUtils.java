@@ -14,18 +14,18 @@ public class ValidationUtils {
     private static final Pattern NAME_PATTERN = Pattern.compile("^[\\p{L}'\\s]+$");
 
     public static boolean isNotNullOrEmpty(String text) {
-        return text != null && !text.trim().isEmpty();
+        return text == null || text.trim().isEmpty();
     }
 
     public static boolean isValidEmail(String email) {
-        if (!isNotNullOrEmpty(email)) {
+        if (isNotNullOrEmpty(email)) {
             return false;
         }
         return EMAIL_PATTERN.matcher(email.trim()).matches();
     }
 
     public static boolean isValidPhone(String phone) {
-        if (!isNotNullOrEmpty(phone)) {
+        if (isNotNullOrEmpty(phone)) {
             return false;
         }
         String trimmedPhone = phone.trim();
@@ -37,7 +37,7 @@ public class ValidationUtils {
     }
 
     public static boolean isValidName(String name) {
-        if (!isNotNullOrEmpty(name)) {
+        if (isNotNullOrEmpty(name)) {
             return false;
         }
 
@@ -45,7 +45,7 @@ public class ValidationUtils {
     }
 
     public static boolean isValidInteger(String numberString) {
-        if (!isNotNullOrEmpty(numberString)) {
+        if (isNotNullOrEmpty(numberString)) {
             return false;
         }
         try {
@@ -56,7 +56,7 @@ public class ValidationUtils {
         }
     }
     public static boolean isValidDouble(String numberString) {
-        if (!isNotNullOrEmpty(numberString)) {
+        if (isNotNullOrEmpty(numberString)) {
             return false;
         }
         try {
@@ -65,8 +65,5 @@ public class ValidationUtils {
         } catch (NumberFormatException e) {
             return false;
         }
-    }
-    public static void main (String []args) {
-
     }
 }
