@@ -25,7 +25,7 @@ public class DateUtils {
     }
 
     public static LocalDate parseDate(String dateString) {
-        if (!ValidationUtils.isNotNullOrEmpty(dateString)) {
+        if (ValidationUtils.isNotNullOrEmpty(dateString)) {
             return null;
         }
         try {
@@ -37,7 +37,7 @@ public class DateUtils {
     }
 
     public static LocalTime parseTime(String timeString) {
-        if (!ValidationUtils.isNotNullOrEmpty(timeString)) {
+        if (ValidationUtils.isNotNullOrEmpty(timeString)) {
             return null;
         }
         try {

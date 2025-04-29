@@ -51,7 +51,7 @@ public class LoginMenu extends JFrame{
         panelPrincipal.add(botonLogin, gbc);
 
         botonLogin.addActionListener(e -> {
-            
+
         });
         add(panelPrincipal);
         setVisible(true);
