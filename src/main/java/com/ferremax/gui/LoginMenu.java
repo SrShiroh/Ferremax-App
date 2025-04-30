@@ -2,7 +2,8 @@ package com.ferremax.gui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import com.ferremax.util.ValidationUtils;
+import com.ferremax.dao.UsuarioDAO;
 
 public class LoginMenu extends JFrame{
     private JTextField campoUser;
@@ -51,16 +52,27 @@ public class LoginMenu extends JFrame{
         panelPrincipal.add(botonLogin, gbc);
 
         botonLogin.addActionListener(e -> {
-
+            if (ValidationUtils.isValidName(campoUser.getText())){
+                String user = campoUser.getText();
+                String pass = campoPassword.getText();
+                //Valida los campos user y pass en la db.
+                if (ValidationUtils.isValidName(user) && ValidationUtils.isValidName(pass)){
+                    UsuarioDAO usuarioDAO = new UsuarioDAO();
+                    if (usuarioDAO.validarCredenciales(user, pass)){
+                        JOptionPane.showMessageDialog(this, "Inicio de sesión exitoso");
+                       // Siguiente frame (terminar xde)
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Usuario o contraseña incorrectos", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Contraseña inválida", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         });
+
+
         add(panelPrincipal);
         setVisible(true);
 
-    }
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LoginMenu loginMenu = new LoginMenu();
-            loginMenu.setVisible(true);
-        });
     }
 }

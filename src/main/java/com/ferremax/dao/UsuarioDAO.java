@@ -4,6 +4,7 @@ import com.ferremax.db.DatabaseConnection;
 import com.ferremax.model.RolUsuario;
 import com.ferremax.model.Usuario;
 
+import javax.swing.*;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,7 @@ import java.util.List;
 public class UsuarioDAO {
     public boolean crearUsuario(Usuario usuario) {
 
-        String sql = "INSERT INTO Usuarios (nombre, correo, telefono, contrasena, rol) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Usuarios (nombre, correo, telefono, contrasena, id_rol) VALUES (?, ?, ?, ?, ?)";
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -90,7 +91,7 @@ public class UsuarioDAO {
         return usuario;
     }
     public List<Usuario> obtenerTodosUsuarios() {
-        String sql = "SELECT id, nombre, correo, telefono, contrasena, rol FROM Usuarios ORDER BY nombre";
+        String sql = "SELECT id, nombre, correo, telefono, contrasena, id_rol FROM Usuarios ORDER BY nombre";
         Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
@@ -114,7 +115,7 @@ public class UsuarioDAO {
         return usuarios;
     }
     public boolean actualizarUsuario(Usuario usuario) {
-        String sql = "UPDATE Usuarios SET nombre = ?, correo = ?, telefono = ?, contrasena = ?, rol = ? WHERE id = ?";
+        String sql = "UPDATE Usuarios SET nombre = ?, correo = ?, telefono = ?, contrasena = ?, id_rol = ? WHERE id = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
 
@@ -164,31 +165,27 @@ public class UsuarioDAO {
         }
     }
 
-    public Usuario validarCredenciales(String nombre, String contrasena) {
-        String sql = "SELECT id, nombre, correo, telefono, contrasena, rol FROM Usuarios WHERE nombre = ? AND contrasena = ?";
+    public boolean validarCredenciales(String user, String password) {
+
+        String sql = "SELECT usuario, contrasena FROM Usuarios WHERE usuario = ? AND contrasena = ?";
         Connection conn = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
-        Usuario usuario = null;
 
         try {
             conn = DatabaseConnection.getConnection();
             pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, nombre);
-            pstmt.setString(2, contrasena);
+            pstmt.setString(1, user);
+            pstmt.setString(2, password);
             rs = pstmt.executeQuery();
 
-            if (rs.next()) {
-                usuario = mapResultSetToUsuario(rs);
-            }
-
         } catch (SQLException e) {
-            System.err.println("Error al validar credenciales: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al validar credenciales: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         } finally {
             DatabaseConnection.closeResources(conn, pstmt, rs);
         }
-        return usuario;
+        return false;
     }
 
     private Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
@@ -198,7 +195,7 @@ public class UsuarioDAO {
                 rs.getString("correo"),
                 rs.getString("telefono"),
                 rs.getString("contrasena"),
-                RolUsuario.valueOf(rs.getString("rol"))
+                RolUsuario.valueOf(rs.getString("id_rol"))
         );
     }
 }

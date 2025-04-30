@@ -14,17 +14,6 @@ public class DatabaseConnection {
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "";
 
-    static {
-        try {
-            Class.forName(DB_DRIVER);
-            System.out.println("INFO: Driver JDBC de MySQL cargado exitosamente.");
-        } catch (ClassNotFoundException e) {
-            System.err.println("ERROR: No se pudo encontrar el driver JDBC de MySQL: " + DB_DRIVER);
-            System.err.println("Asegúrate de que la dependencia 'mysql-connector-j' esté en el pom.xml y sea accesible.");
-            throw new RuntimeException("Error al cargar el driver JDBC de MySQL.", e);
-        }
-    }
-
     public static Connection getConnection() throws SQLException {
         try {
             return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
