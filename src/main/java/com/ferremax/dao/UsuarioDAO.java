@@ -3,199 +3,392 @@ package com.ferremax.dao;
 import com.ferremax.db.DatabaseConnection;
 import com.ferremax.model.RolUsuario;
 import com.ferremax.model.Usuario;
+import com.ferremax.util.ExceptionHandler;
 
-import javax.swing.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class UsuarioDAO {
-    public boolean crearUsuario(Usuario usuario) {
 
-        String sql = "INSERT INTO Usuarios (nombre, correo, telefono, contrasena, id_rol) VALUES (?, ?, ?, ?, ?)";
+    public Usuario findById(int id) {
         Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setString(1, usuario.getNombre());
-            pstmt.setString(2, usuario.getCorreo());
-            pstmt.setString(3, usuario.getTelefono());
-            pstmt.setString(4, usuario.getContrasena()); // Guarda contraseña en texto plano
-            pstmt.setString(5, usuario.getRol().name()); // Guarda el nombre del enum
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al crear usuario: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            DatabaseConnection.closeResources(conn, pstmt, null);
-        }
-    }
-
-    public Usuario obtenerUsuarioPorId(int id) {
-        // Asume tabla 'Usuarios' y columnas 'id', 'nombre', 'correo', 'telefono', 'contrasena', 'rol'
-        String sql = "SELECT id, nombre, correo, telefono, contrasena, id_rol FROM Usuarios WHERE id = ?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+        PreparedStatement stmt = null;
         ResultSet rs = null;
-        Usuario usuario = null;
 
         try {
             conn = DatabaseConnection.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, id);
-            rs = pstmt.executeQuery();
+            stmt = conn.prepareStatement("SELECT * FROM Usuarios WHERE id = ?");
+            stmt.setInt(1, id);
+            rs = stmt.executeQuery();
 
             if (rs.next()) {
-                usuario = mapResultSetToUsuario(rs);
+                return mapResultSetToUsuario(rs);
             }
-
         } catch (SQLException e) {
-            System.err.println("Error al obtener usuario por ID: " + e.getMessage());
-            e.printStackTrace();
+            ExceptionHandler.logException(e, "Error al buscar usuario por ID: " + id);
         } finally {
-            DatabaseConnection.closeResources(conn, pstmt, rs);
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
         }
-        return usuario;
+
+        return null;
     }
 
-    public Usuario obtenerUsuarioPorNombre(String nombre) {
-        String sql = "SELECT id, nombre, correo, telefono, contrasena, id_rol FROM Usuarios WHERE nombre = ?";
+    public Usuario findByUsername(String username) {
         Connection conn = null;
-        PreparedStatement pstmt = null;
+        PreparedStatement stmt = null;
         ResultSet rs = null;
-        Usuario usuario = null;
 
         try {
             conn = DatabaseConnection.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, nombre);
-            rs = pstmt.executeQuery();
+            stmt = conn.prepareStatement("SELECT * FROM Usuarios WHERE usuario = ?");
+            stmt.setString(1, username);
+            rs = stmt.executeQuery();
 
             if (rs.next()) {
-                usuario = mapResultSetToUsuario(rs);
+                return mapResultSetToUsuario(rs);
             }
-
         } catch (SQLException e) {
-            System.err.println("Error al obtener usuario por nombre: " + e.getMessage());
-            e.printStackTrace();
+            ExceptionHandler.logException(e, "Error al buscar usuario por nombre: " + username);
         } finally {
-            DatabaseConnection.closeResources(conn, pstmt, rs);
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
         }
-        return usuario;
+
+        return null;
     }
-    public List<Usuario> obtenerTodosUsuarios() {
-        String sql = "SELECT id, nombre, correo, telefono, contrasena, id_rol FROM Usuarios ORDER BY nombre";
+
+    public List<Usuario> findAll() {
+        List<Usuario> usuarios = new ArrayList<>();
         Connection conn = null;
         Statement stmt = null;
         ResultSet rs = null;
-        List<Usuario> usuarios = new ArrayList<>();
 
         try {
             conn = DatabaseConnection.getConnection();
             stmt = conn.createStatement();
-            rs = stmt.executeQuery(sql);
+            rs = stmt.executeQuery("SELECT * FROM Usuarios ORDER BY nombre");
 
             while (rs.next()) {
                 usuarios.add(mapResultSetToUsuario(rs));
             }
-
         } catch (SQLException e) {
-            System.err.println("Error al obtener todos los usuarios: " + e.getMessage());
-            e.printStackTrace();
+            ExceptionHandler.logException(e, "Error al listar todos los usuarios");
         } finally {
-            DatabaseConnection.closeResources(conn, stmt, rs);
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
         }
+
         return usuarios;
     }
-    public boolean actualizarUsuario(Usuario usuario) {
-        String sql = "UPDATE Usuarios SET nombre = ?, correo = ?, telefono = ?, contrasena = ?, id_rol = ? WHERE id = ?";
+
+    public List<Usuario> findByRole(RolUsuario rol) {
+        List<Usuario> usuarios = new ArrayList<>();
         Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            pstmt = conn.prepareStatement(sql);
-
-            pstmt.setString(1, usuario.getNombre());
-            pstmt.setString(2, usuario.getCorreo());
-            pstmt.setString(3, usuario.getTelefono());
-            pstmt.setString(4, usuario.getContrasena()); // Actualiza contraseña en texto plano
-            pstmt.setString(5, usuario.getRol().name());
-            pstmt.setInt(6, usuario.getId());
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al actualizar usuario: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            DatabaseConnection.closeResources(conn, pstmt, null);
-        }
-    }
-
-    public boolean eliminarUsuario(int id) {
-        // Asume tabla 'Usuarios' y columna 'id'
-        String sql = "DELETE FROM Usuarios WHERE id = ?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setInt(1, id);
-
-            int affectedRows = pstmt.executeUpdate();
-            return affectedRows > 0;
-
-        } catch (SQLException e) {
-            System.err.println("Error al eliminar usuario: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        } finally {
-            DatabaseConnection.closeResources(conn, pstmt, null);
-        }
-    }
-
-    public boolean validarCredenciales(String user, String password) {
-
-        String sql = "SELECT usuario, contrasena FROM Usuarios WHERE usuario = ? AND contrasena = ?";
-        Connection conn = null;
-        PreparedStatement pstmt = null;
+        PreparedStatement stmt = null;
         ResultSet rs = null;
 
         try {
             conn = DatabaseConnection.getConnection();
-            pstmt = conn.prepareStatement(sql);
-            pstmt.setString(1, user);
-            pstmt.setString(2, password);
-            rs = pstmt.executeQuery();
+            stmt = conn.prepareStatement(
+                    "SELECT * FROM Usuarios WHERE id_rol = ? ORDER BY nombre"
+            );
+            stmt.setInt(1, rol.getId());
+            rs = stmt.executeQuery();
 
+            while (rs.next()) {
+                usuarios.add(mapResultSetToUsuario(rs));
+            }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al validar credenciales: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
+            ExceptionHandler.logException(e, "Error al listar usuarios por rol: " + rol);
         } finally {
-            DatabaseConnection.closeResources(conn, pstmt, rs);
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
         }
-        return false;
+
+        return usuarios;
+    }
+
+    public boolean create(Usuario usuario) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet generatedKeys = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement(
+                    "INSERT INTO Usuarios (usuario, nombre, correo, telefono, contrasena, " +
+                            "id_rol, fecha_registro, activo) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                    Statement.RETURN_GENERATED_KEYS
+            );
+
+            stmt.setString(1, usuario.getUsuario());
+            stmt.setString(2, usuario.getNombre());
+            stmt.setString(3, usuario.getCorreo());
+            stmt.setString(4, usuario.getTelefono());
+
+            // Almacenar contraseña en texto plano
+            stmt.setString(5, usuario.getContrasena());
+
+            stmt.setInt(6, usuario.getRol().getId());
+            stmt.setTimestamp(7, new Timestamp(usuario.getFechaRegistro().getTime()));
+            stmt.setBoolean(8, usuario.isActivo());
+
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows == 0) {
+                return false;
+            }
+
+            generatedKeys = stmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                usuario.setId(generatedKeys.getInt(1));
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al crear usuario: " + usuario.getUsuario());
+            return false;
+        } finally {
+            DatabaseConnection.closeResultSet(generatedKeys);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean update(Usuario usuario) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement(
+                    "UPDATE Usuarios SET usuario = ?, nombre = ?, correo = ?, " +
+                            "telefono = ?, id_rol = ? WHERE id = ?"
+            );
+
+            stmt.setString(1, usuario.getUsuario());
+            stmt.setString(2, usuario.getNombre());
+            stmt.setString(3, usuario.getCorreo());
+            stmt.setString(4, usuario.getTelefono());
+            stmt.setInt(5, usuario.getRol().getId());
+            stmt.setInt(6, usuario.getId());
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al actualizar usuario: " + usuario.getId());
+            return false;
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean updateCredentials(Usuario usuario) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement(
+                    "UPDATE Usuarios SET correo = ?, telefono = ? WHERE id = ?"
+            );
+
+            stmt.setString(1, usuario.getCorreo());
+            stmt.setString(2, usuario.getTelefono());
+            stmt.setInt(3, usuario.getId());
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al actualizar credenciales: " + usuario.getId());
+            return false;
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean updatePassword(int userId, String newPassword) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement(
+                    "UPDATE Usuarios SET contrasena = ? WHERE id = ?"
+            );
+
+            // Almacenar contraseña en texto plano
+            stmt.setString(1, newPassword);
+            stmt.setInt(2, userId);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al actualizar contraseña: " + userId);
+            return false;
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean updateLastLogin(int userId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement(
+                    "UPDATE Usuarios SET ultimo_acceso = ? WHERE id = ?"
+            );
+
+            stmt.setTimestamp(1, new Timestamp(new Date().getTime()));
+            stmt.setInt(2, userId);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al actualizar último acceso: " + userId);
+            return false;
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean toggleActive(int userId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+
+            // Primero obtenemos el estado actual
+            PreparedStatement getStmt = conn.prepareStatement(
+                    "SELECT activo FROM Usuarios WHERE id = ?"
+            );
+            getStmt.setInt(1, userId);
+            ResultSet rs = getStmt.executeQuery();
+
+            if (!rs.next()) {
+                return false;
+            }
+
+            boolean currentStatus = rs.getBoolean("activo");
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(getStmt);
+
+            // Luego cambiamos al estado opuesto
+            stmt = conn.prepareStatement(
+                    "UPDATE Usuarios SET activo = ? WHERE id = ?"
+            );
+
+            stmt.setBoolean(1, !currentStatus);
+            stmt.setInt(2, userId);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al cambiar estado activo: " + userId);
+            return false;
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
+
+    public boolean delete(int userId) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+
+            // Verificar si tiene solicitudes asociadas como técnico
+            PreparedStatement checkStmt = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM Solicitudes WHERE id_tecnico = ?"
+            );
+            checkStmt.setInt(1, userId);
+            ResultSet rs = checkStmt.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                // Tiene solicitudes asociadas, no se puede eliminar
+                DatabaseConnection.closeResultSet(rs);
+                DatabaseConnection.closeStatement(checkStmt);
+                return false;
+            }
+
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(checkStmt);
+
+            // Verificar si tiene solicitudes registradas
+            checkStmt = conn.prepareStatement(
+                    "SELECT COUNT(*) FROM Solicitudes WHERE id_usuario_registro = ?"
+            );
+            checkStmt.setInt(1, userId);
+            rs = checkStmt.executeQuery();
+
+            if (rs.next() && rs.getInt(1) > 0) {
+                // Tiene solicitudes registradas, no se puede eliminar
+                DatabaseConnection.closeResultSet(rs);
+                DatabaseConnection.closeStatement(checkStmt);
+                return false;
+            }
+
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(checkStmt);
+
+            // Proceder con la eliminación
+            stmt = conn.prepareStatement(
+                    "DELETE FROM Usuarios WHERE id = ?"
+            );
+
+            stmt.setInt(1, userId);
+
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al eliminar usuario: " + userId);
+            return false;
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
     }
 
     private Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
-        return new Usuario(
-                rs.getInt("id"),
-                rs.getString("nombre"),
-                rs.getString("correo"),
-                rs.getString("telefono"),
-                rs.getString("contrasena"),
-                RolUsuario.valueOf(rs.getString("id_rol"))
-        );
+        Usuario usuario = new Usuario();
+        usuario.setId(rs.getInt("id"));
+        usuario.setUsuario(rs.getString("usuario"));
+        usuario.setNombre(rs.getString("nombre"));
+        usuario.setCorreo(rs.getString("correo"));
+        usuario.setTelefono(rs.getString("telefono"));
+        usuario.setContrasena(rs.getString("contrasena"));
+        usuario.setRol(RolUsuario.valueOf(rs.getInt("id_rol")));
+        usuario.setFechaRegistro(rs.getTimestamp("fecha_registro"));
+
+        Timestamp ultimoAcceso = rs.getTimestamp("ultimo_acceso");
+        if (ultimoAcceso != null) {
+            usuario.setUltimoAcceso(new Date(ultimoAcceso.getTime()));
+        }
+
+        usuario.setActivo(rs.getBoolean("activo"));
+
+        return usuario;
     }
 }

@@ -1,40 +1,57 @@
 package com.ferremax.model;
 
-public class Usuario {
+import java.util.Date;
 
+public class Usuario {
     private int id;
+    private String usuario;
     private String nombre;
     private String correo;
     private String telefono;
     private String contrasena;
     private RolUsuario rol;
+    private Date fechaRegistro;
+    private Date ultimoAcceso;
+    private boolean activo;
 
+    // Constructor vacío
     public Usuario() {
+        this.fechaRegistro = new Date();
+        this.activo = true;
     }
 
-    public Usuario(String nombre, String correo, String telefono, String contrasena, RolUsuario rol) {
+    // Constructor completo
+    public Usuario(int id, String usuario, String nombre, String correo,
+                   String telefono, String contrasena, RolUsuario rol,
+                   Date fechaRegistro, Date ultimoAcceso, boolean activo) {
+        this.id = id;
+        this.usuario = usuario;
         this.nombre = nombre;
         this.correo = correo;
         this.telefono = telefono;
         this.contrasena = contrasena;
         this.rol = rol;
+        this.fechaRegistro = fechaRegistro;
+        this.ultimoAcceso = ultimoAcceso;
+        this.activo = activo;
     }
 
-    public Usuario(int id, String nombre, String correo, String telefono, String contrasena, RolUsuario rol) {
-        this.id = id;
-        this.nombre = nombre;
-        this.correo = correo;
-        this.telefono = telefono;
-        this.contrasena = contrasena;
-    }
+    // Getters & Setters
 
-    // --- Getters y Setters ---
     public int getId() {
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
     public String getNombre() {
@@ -61,11 +78,11 @@ public class Usuario {
         this.telefono = telefono;
     }
 
-    public String getContrasena() { // Getter para la contraseña en texto plano
+    public String getContrasena() {
         return contrasena;
     }
 
-    public void setContrasena(String contrasena) { // Setter para la contraseña en texto plano
+    public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
     }
 
@@ -77,15 +94,36 @@ public class Usuario {
         this.rol = rol;
     }
 
+    public Date getFechaRegistro() {
+        return fechaRegistro;
+    }
+
+    public void setFechaRegistro(Date fechaRegistro) {
+        this.fechaRegistro = fechaRegistro;
+    }
+
+    public Date getUltimoAcceso() {
+        return ultimoAcceso;
+    }
+
+    public void setUltimoAcceso(Date ultimoAcceso) {
+        this.ultimoAcceso = ultimoAcceso;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
+    public boolean hasPermission(String permission) {
+        return rol != null && rol.hasPermission(permission);
+    }
+
     @Override
     public String toString() {
-        return "Usuario{" +
-                "id=" + id +
-                ", nombre='" + nombre + '\'' +
-                ", correo='" + correo + '\'' +
-                ", telefono='" + telefono + '\'' +
-                ", contrasena='********'" +
-                ", rol=" + rol +
-                '}';
+        return nombre;
     }
 }
