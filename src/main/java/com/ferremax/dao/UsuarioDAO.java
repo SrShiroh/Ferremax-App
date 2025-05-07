@@ -63,7 +63,6 @@ public class UsuarioDAO {
             DatabaseConnection.closeStatement(stmt);
             DatabaseConnection.closeConnection(conn);
         }
-
         return null;
     }
 
@@ -369,6 +368,99 @@ public class UsuarioDAO {
             DatabaseConnection.closeStatement(stmt);
             DatabaseConnection.closeConnection(conn);
         }
+    }
+
+    //Cuenta cuantos empleados activos hay
+    public static int getEmpleadosA(){
+        int empleadosA = 0;
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Usuarios WHERE activo = 1");
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                empleadosA = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al contar empleados activos");
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+        return empleadosA;
+    }
+
+    public static int getReparacionesReg(){
+        int reparacionesReg = 0;
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes");
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                reparacionesReg = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al contar el total de solicitudes");
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+        return reparacionesReg;
+    }
+
+    public static int getReparacionesR(){
+        int reparacionesR = 0;
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 4");
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                reparacionesR = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al contar reparaciones realizadas");
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+        return reparacionesR;
+    }
+
+    public static int getSolicitudesP(){
+        int solicitudesP = 0;
+
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 1");
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                solicitudesP = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al contar solicitudes pendientes");
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+        return solicitudesP;
     }
 
     private Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {

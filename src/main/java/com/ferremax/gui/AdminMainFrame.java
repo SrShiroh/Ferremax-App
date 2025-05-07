@@ -1,10 +1,15 @@
 package com.ferremax.gui;
 
+import com.ferremax.dao.SolicitudDAO;
+import com.ferremax.dao.UsuarioDAO;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminMainFrame extends JFrame {
 
@@ -13,7 +18,6 @@ public class AdminMainFrame extends JFrame {
 
     // Constantes para los nombres de paneles
     private static final String PANEL_INICIO = "INICIO";
-    private static final String PANEL_CLIENTES = "CLIENTES";
     private static final String PANEL_SOLICITUDES = "SOLICITUDES";
     private static final String PANEL_EMPLEADOS = "EMPLEADOS";
     private static final String PANEL_HORARIOS = "HORARIOS";
@@ -47,7 +51,6 @@ public class AdminMainFrame extends JFrame {
 
         // Añadir los distintos paneles de contenido
         contentPanel.add(createHomePanel(), PANEL_INICIO);
-        contentPanel.add(createClientesPanel(), PANEL_CLIENTES);
         contentPanel.add(createSolicitudesPanel(), PANEL_SOLICITUDES);
         contentPanel.add(createEmpleadosPanel(), PANEL_EMPLEADOS);
         contentPanel.add(createHorariosPanel(), PANEL_HORARIOS);
@@ -85,7 +88,6 @@ public class AdminMainFrame extends JFrame {
 
         // Opciones de menú
         addMenuItem(panel, "Dashboard", PANEL_INICIO, "Inicio");
-        addMenuItem(panel, "Gestión de Clientes", PANEL_CLIENTES, "Clientes");
         addMenuItem(panel, "Gestión de Solicitudes", PANEL_SOLICITUDES, "Solicitudes");
         addMenuItem(panel, "Gestión de Empleados", PANEL_EMPLEADOS, "Empleados");
         addMenuItem(panel, "Gestión de Horarios", PANEL_HORARIOS, "Horarios");
@@ -145,7 +147,7 @@ public class AdminMainFrame extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(0, 123, 255)),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
 
@@ -190,10 +192,15 @@ public class AdminMainFrame extends JFrame {
         dashboardPanel.setOpaque(false);
         dashboardPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        dashboardPanel.add(createStatCard("Solicitudes Pendientes", "24", new Color(231, 76, 60)));
-        dashboardPanel.add(createStatCard("Empleados Activos", "8", new Color(52, 152, 219)));
-        dashboardPanel.add(createStatCard("Clientes Registrados", "143", new Color(46, 204, 113)));
-        dashboardPanel.add(createStatCard("Horarios Disponibles", "32", new Color(155, 89, 182)));
+        String solicitudesP = String.valueOf(UsuarioDAO.getSolicitudesP());
+        String clientesA = String.valueOf(UsuarioDAO.getEmpleadosA());
+        String reparacionesReg = String .valueOf(UsuarioDAO.getReparacionesReg());
+        String reparacionesR = String.valueOf(UsuarioDAO.getReparacionesR());
+
+        dashboardPanel.add(createStatCard("Empleados Activos", clientesA, new Color(231, 76, 60)));
+        dashboardPanel.add(createStatCard("Solicitudes Pendientes", solicitudesP, new Color(52, 152, 219)));
+        dashboardPanel.add(createStatCard("Reparaciones Realizadas", reparacionesR, new Color(46, 204, 113)));
+        dashboardPanel.add(createStatCard("Reparaciones Registradas", reparacionesReg, new Color(155, 89, 182)));
 
         panel.add(dashboardPanel, BorderLayout.CENTER);
 
@@ -220,94 +227,6 @@ public class AdminMainFrame extends JFrame {
         lblTitle.setHorizontalAlignment(JLabel.CENTER);
         lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
         panel.add(lblTitle, BorderLayout.SOUTH);
-
-        return panel;
-    }
-
-    private JPanel createClientesPanel() {
-        JPanel panel = new JPanel(new BorderLayout(0, 20));
-        panel.setBackground(Color.WHITE);
-
-        // Encabezado con título y buscador
-        JPanel headerPanel = new JPanel(new BorderLayout());
-        headerPanel.setOpaque(false);
-
-        JLabel lblTitle = new JLabel("Gestión de Clientes");
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
-        headerPanel.add(lblTitle, BorderLayout.WEST);
-
-        // Panel de búsqueda
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        searchPanel.setOpaque(false);
-        JTextField txtSearch = new JTextField(20);
-        JButton btnSearch = new JButton("Buscar");
-        btnSearch.setBackground(new Color(52, 152, 219));
-        btnSearch.setForeground(Color.WHITE);
-        btnSearch.setFocusPainted(false);
-
-        searchPanel.add(new JLabel("Buscar: "));
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnSearch);
-
-        headerPanel.add(searchPanel, BorderLayout.EAST);
-        panel.add(headerPanel, BorderLayout.NORTH);
-
-        // Tabla de clientes
-        String[] columnNames = {"ID", "Nombre", "Correo", "Teléfono", "Dirección", "Acciones"};
-        Object[][] data = {
-                {"1", "Juan Pérez", "juan@example.com", "555-123-4567", "Av. Principal #123", ""},
-                {"2", "María García", "maria@example.com", "555-987-6543", "Calle 42 #456", ""},
-                {"3", "Carlos López", "carlos@example.com", "555-456-7890", "Plaza Central #789", ""},
-                {"4", "Ana Martínez", "ana@example.com", "555-321-6540", "Av. Norte #101", ""}
-        };
-
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 5; // Solo la columna de acciones es editable
-            }
-        };
-
-        JTable table = new JTable(model);
-        table.setRowHeight(40);
-        table.setShowVerticalLines(false);
-        table.getTableHeader().setBackground(new Color(240, 240, 240));
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-
-        // Renderizador para botones en la columna de acciones
-        table.getColumnModel().getColumn(5).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
-            JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-            panel1.setOpaque(false);
-
-            JButton btnEditar = new JButton("Editar");
-            btnEditar.setBackground(new Color(52, 152, 219));
-            btnEditar.setForeground(Color.WHITE);
-            btnEditar.setFocusPainted(false);
-
-            JButton btnEliminar = new JButton("Eliminar");
-            btnEliminar.setBackground(new Color(231, 76, 60));
-            btnEliminar.setForeground(Color.WHITE);
-            btnEliminar.setFocusPainted(false);
-
-            panel1.add(btnEditar);
-            panel1.add(btnEliminar);
-            return panel1;
-        });
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        // Panel de acciones
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        actionsPanel.setOpaque(false);
-
-        JButton btnAgregar = new JButton("Agregar Nuevo Cliente");
-        btnAgregar.setBackground(new Color(46, 204, 113));
-        btnAgregar.setForeground(Color.WHITE);
-        btnAgregar.setFocusPainted(false);
-
-        actionsPanel.add(btnAgregar);
-        panel.add(actionsPanel, BorderLayout.SOUTH);
 
         return panel;
     }
@@ -342,17 +261,19 @@ public class AdminMainFrame extends JFrame {
 
         // Tabla de solicitudes
         String[] columnNames = {"ID", "Solicitante", "Contacto", "Dirección", "Fecha", "Estado", "Acciones"};
-        Object[][] data = {
-                {"001", "Juan Pérez", "555-123-4567", "Av. Principal #123", "05/05/2025", "Pendiente", ""},
-                {"002", "María García", "555-987-6543", "Calle 42 #456", "06/05/2025", "Asignada", ""},
-                {"003", "Carlos López", "555-456-7890", "Plaza Central #789", "07/05/2025", "En Proceso", ""},
-                {"004", "Ana Martínez", "555-321-6540", "Av. Norte #101", "08/05/2025", "Completada", ""}
-        };
+        //Recibir y mostrar los valores desde la columna Solicitudes de la db y mostrar en el panel
 
+        Object [][] data = {
+                {"S001", "Pedro Gómez", "555-111-2222", "Calle 123", "05/05/2025", "Pendiente", ""},
+                {"S002", "Laura Sánchez", "555-333-4444", "Avenida 456", "04/05/2025", "En Proceso", ""},
+                {"S003", "Roberto Díaz", "555-555-6666", "Calle 789", "03/05/2025", "Completada", ""},
+                {"S004", "Sofía Torres", "555-777-8888", "Avenida 1011", "02/05/2025", "Cancelada", ""}
+        };
+        
         DefaultTableModel model = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6; // Solo la columna de acciones es editable
+                return column == 6;
             }
         };
 
@@ -665,7 +586,9 @@ public class AdminMainFrame extends JFrame {
         headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        // Panel central con tabla de usuarios del sistema
+        /*
+         Cambiar a que reciba los valores desde la base de datos
+         */
         String[] columnNames = {"ID", "Usuario", "Nombre", "Correo", "Rol", "Último Acceso", "Estado", "Acciones"};
         Object[][] data = {
                 {"1", "admin", "Admin Sistema", "admin@ferremax.com", "Administrador", "05/05/2025 00:15", "Activo", ""},
