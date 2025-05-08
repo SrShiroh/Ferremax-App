@@ -1,4 +1,3 @@
-
 CREATE DATABASE IF NOT EXISTS sistema_reparaciones_ac;
 USE sistema_reparaciones_ac;
 
@@ -21,9 +20,6 @@ CREATE TABLE Usuarios (
     activo BOOLEAN DEFAULT TRUE,
     FOREIGN KEY (id_rol) REFERENCES Roles(id)
 );
-
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', 'Shiroasd', 1);
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shirohe' ,'Shiroh', 'shiroh@gmail.com', 'Shiroasd', 3);
 
 CREATE TABLE Estados_Solicitud (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -48,23 +44,6 @@ CREATE TABLE Solicitudes (
     FOREIGN KEY (id_usuario_registro) REFERENCES Usuarios(id),
     FOREIGN KEY (id_tecnico) REFERENCES Usuarios(id)
 );
-
-INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
-VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '24-07-2025', '19:25:00', 1, 3);
-INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
-VALUES ('Carlos Santos', 'Juan@example.com', '091411872', 'nose', '27-02-2026', '14:25:00', 1, 3);
-
-UPDATE Solicitudes
-SET id_estado = 4
-WHERE id = 1;
-
-SELECT *
-FROM SOLICITUDES
-WHERE id_estado = 1;
-
-SELECT *
-FROM SOLICITUDES
-WHERE id_estado = 4;
 
 CREATE TABLE Horarios (
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -110,3 +89,13 @@ INSERT INTO Estados_Solicitud (nombre, descripcion) VALUES
 ('En Proceso', 'Reparación iniciada'),
 ('Completada', 'Reparación finalizada con éxito'),
 ('Cancelada', 'Solicitud cancelada');
+
+
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', 'Shiroasd', 1);
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shirohe' ,'Shiroh', 'shiroh@gmail.com', 'Shiroasd', 3);
+
+
+INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
+VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '24-07-2025', '19:25:00', 1, 3);
+INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
+VALUES ('Carlos Santos', 'Juan@example.com', '091411872', 'nose', '27-02-2026', '14:25:00', 1, 3);
