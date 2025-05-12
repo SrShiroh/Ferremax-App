@@ -66,7 +66,7 @@ public class UsuarioDAO {
         return null;
     }
 
-    public List<Usuario> findAll() {
+    public static List<Usuario> findAll() {
         List<Usuario> usuarios = new ArrayList<>();
         Connection conn = null;
         Statement stmt = null;
@@ -463,7 +463,7 @@ public class UsuarioDAO {
         return solicitudesP;
     }
 
-    private Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
+    private static Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
         usuario.setId(rs.getInt("id"));
         usuario.setUsuario(rs.getString("usuario"));
@@ -482,5 +482,30 @@ public class UsuarioDAO {
         usuario.setActivo(rs.getBoolean("activo"));
 
         return usuario;
+    }
+
+    public static List<Usuario> getEmpleados() {
+        List<Usuario> empleados = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT * FROM Usuarios WHERE id_rol = 2 or id_rol = 3 ORDER BY id");
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                empleados.add(mapResultSetToUsuario(rs));
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al listar empleados");
+        } finally {
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+
+        return empleados;
     }
 }

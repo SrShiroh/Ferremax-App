@@ -178,4 +178,16 @@ public class Solicitud {
     public String toString() {
         return "Solicitud #" + id + " - " + nombreSolicitante;
     }
+
+    public Object getSolicitante() {
+        return nombreSolicitante;
+    }
+
+    public Object getContacto() {
+        return "Tel: " + telefono + ", Correo: " + correo;
+    }
+
+    public Object getFecha() {
+        return fechaSolicitud;
+    }
 }

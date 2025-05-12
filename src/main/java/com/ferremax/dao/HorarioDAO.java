@@ -2,6 +2,7 @@ package com.ferremax.dao;
 
 import com.ferremax.db.DatabaseConnection;
 import com.ferremax.model.Horario;
+import com.ferremax.model.Usuario;
 import com.ferremax.util.ExceptionHandler;
 
 import java.sql.Connection;
@@ -171,7 +172,7 @@ public class HorarioDAO {
 
     public List<Horario> findByDate(Date fecha) {
         return findByCriteria("WHERE DATE(fecha) = DATE(?)",
-                new Object[] { new Timestamp(fecha.getTime()) });
+                new Object[]{new Timestamp(fecha.getTime())});
     }
 
     public List<Horario> findAvailable() {
@@ -179,12 +180,12 @@ public class HorarioDAO {
     }
 
     public List<Horario> findBySolicitud(int idSolicitud) {
-        return findByCriteria("WHERE id_solicitud = ?", new Object[] { idSolicitud });
+        return findByCriteria("WHERE id_solicitud = ?", new Object[]{idSolicitud});
     }
 
     public List<Horario> findByDateRange(Date fechaInicio, Date fechaFin) {
         return findByCriteria("WHERE fecha BETWEEN ? AND ?",
-                new Object[] {
+                new Object[]{
                         new Timestamp(fechaInicio.getTime()),
                         new Timestamp(fechaFin.getTime())
                 });
@@ -193,7 +194,7 @@ public class HorarioDAO {
     public List<Horario> findAvailableByDate(Date fecha) {
         return findByCriteria(
                 "WHERE disponible = true AND DATE(fecha) = DATE(?)",
-                new Object[] { new Timestamp(fecha.getTime()) }
+                new Object[]{new Timestamp(fecha.getTime())}
         );
     }
 
@@ -229,7 +230,6 @@ public class HorarioDAO {
                     String nombreSolicitante = rs.getString("nombre_solicitante");
                     if (nombreSolicitante != null) {
                         // Se podría agregar esta información a un campo adicional en Horario
-                        // para mostrar en la UI
                     }
                 }
 
@@ -380,7 +380,7 @@ public class HorarioDAO {
         }
     }
 
-    private Horario mapResultSetToHorario(ResultSet rs) throws SQLException {
+    private static Horario mapResultSetToHorario(ResultSet rs) throws SQLException {
         Horario horario = new Horario();
         horario.setId(rs.getInt("id"));
 
@@ -533,5 +533,41 @@ public class HorarioDAO {
             DatabaseConnection.closeStatement(stmt);
             DatabaseConnection.closeConnection(conn);
         }
+    }
+    //"ID", "Fecha", "Hora Inicio", "Hora Fin", "Disponible", "Solicitud", "Técnico Asignado", "Acciones"
+    public static List<Horario> getHorarios() {
+        List<Horario> horarios = new ArrayList<>();
+        String sql = "SELECT h.*, s.id as solicitud_id, s.solicitante as nombre_solicitante, " +
+                "u.nombre as nombre_tecnico " +
+                "FROM horarios h " +
+                "LEFT JOIN solicitudes s ON h.id_solicitud = s.id " +
+                "LEFT JOIN usuarios u ON s.id_tecnico = u.id";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                Horario horario = new Horario();
+                horario.setId(rs.getInt("id"));
+                horario.setFecha(rs.getDate("fecha"));
+                horario.setHoraInicio(rs.getString("hora_inicio"));
+                horario.setHoraFin(rs.getString("hora_fin"));
+                horario.setDisponible(rs.getBoolean("disponible"));
+
+                // Manejo de valores que pueden ser NULL
+                int solicitudId = rs.getInt("solicitud_id");
+                if (!rs.wasNull()) {
+                    horario.setIdSolicitud(solicitudId);
+                    horario.setTecnicoAsignado(rs.getString("nombre_tecnico"));
+                }
+
+                horarios.add(horario);
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al buscar horarios con detalles");
+        }
+
+        return horarios;
     }
 }

@@ -1,7 +1,9 @@
 package com.ferremax.gui;
 
-import com.ferremax.dao.SolicitudDAO;
-import com.ferremax.dao.UsuarioDAO;
+import com.ferremax.model.Horario;
+import com.ferremax.model.Solicitud;
+import com.ferremax.model.Usuario;
+import com.ferremax.dao.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -9,7 +11,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.List;
 
 public class AdminMainFrame extends JFrame {
 
@@ -231,6 +232,26 @@ public class AdminMainFrame extends JFrame {
         return panel;
     }
 
+    //Llenar un array, list, u cualquier otro para luego poder mostrar los valores en la tabla
+    private Object[][] getSolicitudesTableData() {
+        java.util.List<Object[]> rows = new ArrayList<>();
+        java.util.List<Solicitud> allSolicitudes = SolicitudDAO.getSolicitudes();
+
+        for (Solicitud solicitud : allSolicitudes) {
+            Object[] row = new Object[7]; // 7 columnas según tu modelo
+            row[0] = solicitud.getId();
+            row[1] = solicitud.getSolicitante();
+            row[2] = solicitud.getContacto();
+            row[3] = solicitud.getDireccion();
+            row[4] = solicitud.getFecha();
+            row[5] = solicitud.getEstado();
+            row[6] = ""; // Columna para acciones
+            rows.add(row);
+        }
+
+        return rows.toArray(new Object[0][]);
+    }
+
     private JPanel createSolicitudesPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         panel.setBackground(Color.WHITE);
@@ -261,16 +282,9 @@ public class AdminMainFrame extends JFrame {
 
         // Tabla de solicitudes
         String[] columnNames = {"ID", "Solicitante", "Contacto", "Dirección", "Fecha", "Estado", "Acciones"};
-        //Recibir y mostrar los valores desde la columna Solicitudes de la db y mostrar en el panel
+// Recibir y mostrar los valores desde la columna Solicitudes de la db y mostrar en el panel
 
-        Object [][] data = {
-                {"S001", "Pedro Gómez", "555-111-2222", "Calle 123", "05/05/2025", "Pendiente", ""},
-                {"S002", "Laura Sánchez", "555-333-4444", "Avenida 456", "04/05/2025", "En Proceso", ""},
-                {"S003", "Roberto Díaz", "555-555-6666", "Calle 789", "03/05/2025", "Completada", ""},
-                {"S004", "Sofía Torres", "555-777-8888", "Avenida 1011", "02/05/2025", "Cancelada", ""}
-        };
-        
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+        DefaultTableModel model = new DefaultTableModel(getSolicitudesTableData(), columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return column == 6;
@@ -326,6 +340,23 @@ public class AdminMainFrame extends JFrame {
 
         return panel;
     }
+    private Object[][] getEmpleadosTableData() {
+        java.util.List<Object[]> rows = new ArrayList<>();
+        java.util.List<Usuario> allEmpleados = UsuarioDAO.getEmpleados();
+
+        for (Usuario usuario : allEmpleados) {
+            Object[] row = new Object[6];
+            row[0] = usuario.getId();
+            row[1] = usuario.getNombre();
+            row[2] = usuario.getCorreo();
+            row[3] = usuario.getTelefono();
+            row[4] = usuario.getRol();
+            row[5] = ""; // Columna para acciones
+            rows.add(row);
+        }
+
+        return rows.toArray(new Object[0][]);
+    }
 
     private JPanel createEmpleadosPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
@@ -356,18 +387,12 @@ public class AdminMainFrame extends JFrame {
         panel.add(headerPanel, BorderLayout.NORTH);
 
         // Panel central con tabla de empleados
-        String[] columnNames = {"ID", "Nombre", "Correo", "Teléfono", "Rol", "Acciones"};
-        Object[][] data = {
-                {"E001", "Pedro Gómez", "pedro@ferremax.com", "555-111-2222", "Técnico", ""},
-                {"E002", "Laura Sánchez", "laura@ferremax.com", "555-333-4444", "Empleado", ""},
-                {"E003", "Roberto Díaz", "roberto@ferremax.com", "555-555-6666", "Técnico", ""},
-                {"E004", "Sofía Torres", "sofia@ferremax.com", "555-777-8888", "Administrador", ""}
-        };
+        String[] columnNames = {"ID", "Nombre", "Correo", "Teléfono", "Rol", "Acciones"};;
 
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+        DefaultTableModel model = new DefaultTableModel(getEmpleadosTableData(), columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 5; // Solo la columna de acciones es editable
+                return column == 5;
             }
         };
 
@@ -432,6 +457,30 @@ public class AdminMainFrame extends JFrame {
         return panel;
     }
 
+    private Object[][] getHorariosTableData() {
+        java.util.List<Object[]> rows = new ArrayList<>();
+        java.util.List<Horario> allHorarios = HorarioDAO.getHorarios();
+
+        for (Horario horario : allHorarios) {
+            Object[] row = new Object[8];
+            row[0] = horario.getId();
+            row[1] = horario.getFecha();
+            row[2] = horario.getHoraInicio();
+            row[3] = horario.getHoraFin();
+            row[4] = horario.isDisponible() ? "Sí" : "No";
+            String solicitudInfo = "";
+            if (horario.getIdSolicitud() != null) {
+                solicitudInfo = "Solicitud #" + horario.getIdSolicitud();
+            }
+            row[5] = solicitudInfo;
+            row[6] = horario.getTecnicoAsignado() != null ? horario.getTecnicoAsignado() : "";
+            row[7] = "";
+            rows.add(row);
+        }
+
+        return rows.toArray(new Object[0][]);
+    }
+
     private JPanel createHorariosPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         panel.setBackground(Color.WHITE);
@@ -467,19 +516,11 @@ public class AdminMainFrame extends JFrame {
 
         // Panel central con tabla de horarios
         String[] columnNames = {"ID", "Fecha", "Hora Inicio", "Hora Fin", "Disponible", "Solicitud", "Técnico Asignado", "Acciones"};
-        Object[][] data = {
-                {"H001", "05/05/2025", "09:00", "11:00", "No", "S001", "Pedro Gómez", ""},
-                {"H002", "05/05/2025", "11:30", "13:30", "No", "S002", "Roberto Díaz", ""},
-                {"H003", "06/05/2025", "09:00", "11:00", "Sí", "-", "-", ""},
-                {"H004", "06/05/2025", "11:30", "13:30", "Sí", "-", "-", ""},
-                {"H005", "07/05/2025", "09:00", "11:00", "No", "S003", "Pedro Gómez", ""},
-                {"H006", "07/05/2025", "11:30", "13:30", "Sí", "-", "-", ""}
-        };
 
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+        DefaultTableModel model = new DefaultTableModel(getHorariosTableData(), columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7; // Solo la columna de acciones es editable
+                return column == 7;
             }
         };
 
@@ -558,6 +599,25 @@ public class AdminMainFrame extends JFrame {
         return panel;
     }
 
+    private Object[][] getUsuariosTableData() {
+        java.util.List<Object[]> rows = new ArrayList<>();
+        java.util.List<Usuario> allUsuarios = UsuarioDAO.findAll();
+
+        for (Usuario usuario : allUsuarios) {
+            Object[] row = new Object[7];
+            row[0] = usuario.getId();
+            row[1] = usuario.getUsuario();
+            row[2] = usuario.getNombre();
+            row[3] = usuario.getRol();
+            row[4] = usuario.getUltimoAcceso();
+            row[5] = usuario.isActivo() ? "Activo" : "Inactivo";
+            row[6] = "";
+            rows.add(row);
+        }
+
+        return rows.toArray(new Object[0][]);
+    }
+
     private JPanel createUsuariosPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         panel.setBackground(Color.WHITE);
@@ -586,22 +646,13 @@ public class AdminMainFrame extends JFrame {
         headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        /*
-         Cambiar a que reciba los valores desde la base de datos
-         */
-        String[] columnNames = {"ID", "Usuario", "Nombre", "Correo", "Rol", "Último Acceso", "Estado", "Acciones"};
-        Object[][] data = {
-                {"1", "admin", "Admin Sistema", "admin@ferremax.com", "Administrador", "05/05/2025 00:15", "Activo", ""},
-                {"2", "pedro", "Pedro Gómez", "pedro@ferremax.com", "Técnico", "04/05/2025 17:22", "Activo", ""},
-                {"3", "laura", "Laura Sánchez", "laura@ferremax.com", "Empleado", "04/05/2025 16:45", "Activo", ""},
-                {"4", "roberto", "Roberto Díaz", "roberto@ferremax.com", "Técnico", "03/05/2025 14:30", "Activo", ""},
-                {"5", "miguel", "Miguel Ruiz", "miguel@ferremax.com", "Empleado", "28/04/2025 09:15", "Inactivo", ""}
-        };
+        String[] columnNames = {"ID", "Usuario", "Nombre", "Rol", "Último Acceso", "Estado", "Acciones"};
 
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+
+        DefaultTableModel model = new DefaultTableModel(getUsuariosTableData(), columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 7; // Solo la columna de acciones es editable
+                return column == 6; // Solo la columna de acciones es editable
             }
         };
 
@@ -612,7 +663,7 @@ public class AdminMainFrame extends JFrame {
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
         // Renderizador para botones en la columna de acciones
-        table.getColumnModel().getColumn(7).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
+        table.getColumnModel().getColumn(6).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             buttonPanel.setOpaque(false);
 

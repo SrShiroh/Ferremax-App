@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 
 public class SolicitudDAO {
-
     public Solicitud findById(int id) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -212,7 +211,7 @@ public class SolicitudDAO {
         }
     }
 
-    public List<Solicitud> findAll() {
+    public static List<Solicitud> findAll() {
         return findByCriteria("", null);
     }
 
@@ -243,7 +242,7 @@ public class SolicitudDAO {
         );
     }
 
-    private List<Solicitud> findByCriteria(String whereClause, Object[] params) {
+    private static List<Solicitud> findByCriteria(String whereClause, Object[] params) {
         List<Solicitud> solicitudes = new ArrayList<>();
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -276,6 +275,40 @@ public class SolicitudDAO {
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al buscar solicitudes");
+        } finally {
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+
+        return solicitudes;
+    }
+    //Enviar todos los datos de las columndas "ID", "Solicitante", "Contacto", "Dirección", "Fecha", "Estado"
+    public static List<Solicitud> getSolicitudes() {
+        List<Solicitud> solicitudes = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            String sql =
+                    "SELECT s.*, " +
+                            "reg.nombre as nombre_registrador, " +
+                            "tec.nombre as nombre_tecnico " +
+                            "FROM Solicitudes s " +
+                            "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
+                            "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
+                            "ORDER BY s.id ASC";
+
+            stmt = conn.prepareStatement(sql);
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                solicitudes.add(mapResultSetToSolicitud(rs));
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al obtener todas las solicitudes");
         } finally {
             DatabaseConnection.closeResultSet(rs);
             DatabaseConnection.closeStatement(stmt);
@@ -386,7 +419,7 @@ public class SolicitudDAO {
         return 0;
     }
 
-    private Solicitud mapResultSetToSolicitud(ResultSet rs) throws SQLException {
+    private static Solicitud mapResultSetToSolicitud(ResultSet rs) throws SQLException {
         Solicitud solicitud = new Solicitud();
         solicitud.setId(rs.getInt("id"));
         solicitud.setNombreSolicitante(rs.getString("nombre_solicitante"));
@@ -414,10 +447,10 @@ public class SolicitudDAO {
             solicitud.setIdTecnico(idTecnico);
         }
 
-        // Incluir nombres para mostrar en la UI
         solicitud.setNombreUsuarioRegistro(rs.getString("nombre_registrador"));
         solicitud.setNombreTecnico(rs.getString("nombre_tecnico"));
 
         return solicitud;
     }
+
 }
