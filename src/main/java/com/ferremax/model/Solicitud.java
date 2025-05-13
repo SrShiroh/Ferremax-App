@@ -44,6 +44,18 @@ public class Solicitud {
         this.idTecnico = idTecnico;
     }
 
+    public Solicitud(String nombre, String correo, String telefono, String direccion, String fecha, String hora, String notas) {
+        this.nombreSolicitante = nombre;
+        this.correo = correo;
+        this.telefono = telefono;
+        this.direccion = direccion;
+        this.fechaSolicitud = new Date(); // Asignar la fecha actual
+        this.fechaProgramada = new Date(); // Asignar la fecha actual
+        this.horaProgramada = hora;
+        this.estado = EstadoSolicitud.PENDIENTE; // Estado inicial
+        this.notas = notas;
+    }
+
     // Getters & Setters
     public int getId() {
         return id;

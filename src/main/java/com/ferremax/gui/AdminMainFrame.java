@@ -10,6 +10,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.sql.SQLDataException;
 import java.util.ArrayList;
 
 public class AdminMainFrame extends JFrame {
@@ -17,7 +18,6 @@ public class AdminMainFrame extends JFrame {
     private JPanel contentPanel;
     private CardLayout cardLayout;
 
-    // Constantes para los nombres de paneles
     private static final String PANEL_INICIO = "INICIO";
     private static final String PANEL_SOLICITUDES = "SOLICITUDES";
     private static final String PANEL_EMPLEADOS = "EMPLEADOS";
@@ -108,6 +108,15 @@ public class AdminMainFrame extends JFrame {
         btnLogout.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
         panel.add(btnLogout);
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        //Cerrar sesion btn
+        btnLogout.addActionListener(e -> {
+            int option = JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea cerrar sesión?", "Cerrar Sesión", JOptionPane.YES_NO_OPTION);
+            if (option == JOptionPane.YES_OPTION) {
+                dispose();
+                new LoginFrame().setVisible(true);
+            }
+        });
 
         return panel;
     }
@@ -264,22 +273,6 @@ public class AdminMainFrame extends JFrame {
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         headerPanel.add(lblTitle, BorderLayout.WEST);
 
-        // Panel de búsqueda
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        searchPanel.setOpaque(false);
-        JTextField txtSearch = new JTextField(20);
-        JButton btnSearch = new JButton("Buscar");
-        btnSearch.setBackground(new Color(52, 152, 219));
-        btnSearch.setForeground(Color.WHITE);
-        btnSearch.setFocusPainted(false);
-
-        searchPanel.add(new JLabel("Buscar: "));
-        searchPanel.add(txtSearch);
-        searchPanel.add(btnSearch);
-
-        headerPanel.add(searchPanel, BorderLayout.EAST);
-        panel.add(headerPanel, BorderLayout.NORTH);
-
         // Tabla de solicitudes
         String[] columnNames = {"ID", "Solicitante", "Contacto", "Dirección", "Fecha", "Estado", "Acciones"};
 // Recibir y mostrar los valores desde la columna Solicitudes de la db y mostrar en el panel
@@ -338,8 +331,108 @@ public class AdminMainFrame extends JFrame {
         actionsPanel.add(btnAgregar);
         panel.add(actionsPanel, BorderLayout.SOUTH);
 
+        //Boton para agregar una nueva solicitud
+        btnAgregar.addActionListener(e -> {
+            //Abrir el panel de formulario de solicitud y cerrar el actual
+            dispose();
+            JPanel formularioPanel = formularioSolicitud();
+            contentPanel.add(formularioPanel, "FORMULARIO_SOLICITUD");
+            cardLayout.show(contentPanel, "FORMULARIO_SOLICITUD");
+        });
+
         return panel;
     }
+
+    private JPanel formularioSolicitud() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(Color.WHITE);
+
+        JLabel lblTitle = new JLabel("Formulario de Nueva Solicitud");
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
+        lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(lblTitle);
+
+        //Panel + Campos formulario
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new GridLayout(0, 2, 10, 10));
+        formPanel.setBackground(Color.WHITE);
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        formPanel.setPreferredSize(new Dimension(400, 300));
+        formPanel.setMaximumSize(new Dimension(400, 300));
+        formPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        formPanel.setBorder(BorderFactory.createTitledBorder("Detalles de la Solicitud"));
+
+        // Campos del formulario
+        JTextField txtNombre = new JTextField();
+        JTextField txtCorreo = new JTextField();
+        JTextField txtTelefono = new JTextField();
+        JTextField txtDireccion = new JTextField();
+        JTextField txtFecha = new JTextField();
+        JTextField txtHora = new JTextField();
+        JTextArea txtNotas = new JTextArea(5, 20);
+        txtNotas.setLineWrap(true);
+        txtNotas.setWrapStyleWord(true);
+        JScrollPane scrollNotas = new JScrollPane(txtNotas);
+        scrollNotas.setPreferredSize(new Dimension(200, 100));
+        scrollNotas.setMaximumSize(new Dimension(200, 100));
+        scrollNotas.setBorder(BorderFactory.createTitledBorder("Notas"));
+        JButton btnGuardar = new JButton("Guardar Solicitud");
+        btnGuardar.setBackground(new Color(46, 204, 113));
+        btnGuardar.setForeground(Color.WHITE);
+        btnGuardar.setFocusPainted(false);
+        btnGuardar.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnGuardar.setPreferredSize(new Dimension(200, 40));
+        btnGuardar.setMaximumSize(new Dimension(200, 40));
+        btnGuardar.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        btnGuardar.setFont(new Font("Arial", Font.BOLD, 14));
+
+        // Añadir campos al panel del formulario
+        formPanel.add(new JLabel("Nombre del Solicitante:"));
+        formPanel.add(txtNombre);
+        formPanel.add(new JLabel("Correo:"));
+        formPanel.add(txtCorreo);
+        formPanel.add(new JLabel("Teléfono:"));
+        formPanel.add(txtTelefono);
+        formPanel.add(new JLabel("Dirección:"));
+        formPanel.add(txtDireccion);
+        formPanel.add(new JLabel("Fecha Programada (24-07-11):"));
+        formPanel.add(txtFecha);
+        formPanel.add(new JLabel("Hora Programada (14:00):"));
+        formPanel.add(txtHora);
+        formPanel.add(scrollNotas);
+        formPanel.add(btnGuardar);
+        panel.add(formPanel);
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+        panel.add(btnGuardar);
+
+        //Guardar solicitud
+        btnGuardar.addActionListener(e -> {
+            String nombre = txtNombre.getText();
+            String correo = txtCorreo.getText();
+            String telefono = txtTelefono.getText();
+            String direccion = txtDireccion.getText();
+            String fecha = txtFecha.getText();
+            String hora = txtHora.getText();
+            String notas = txtNotas.getText();
+
+            // Validar campos
+            if (nombre.isEmpty() || direccion.isEmpty() || fecha.isEmpty() || hora.isEmpty()) {
+                JOptionPane.showMessageDialog(panel, "Por favor, complete todos los campos obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Guardar solicitud en la base de datos
+            SolicitudDAO.create(new Solicitud(nombre, correo, telefono, direccion, fecha, hora, notas));
+            JOptionPane.showMessageDialog(panel, "Solicitud guardada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            cardLayout.show(contentPanel, PANEL_SOLICITUDES);
+        });
+
+        // Botón para cancelar y volver al panel de solicitudes
+
+        return panel;
+    }
+
     private Object[][] getEmpleadosTableData() {
         java.util.List<Object[]> rows = new ArrayList<>();
         java.util.List<Usuario> allEmpleados = UsuarioDAO.getEmpleados();
@@ -493,28 +586,6 @@ public class AdminMainFrame extends JFrame {
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         headerPanel.add(lblTitle, BorderLayout.WEST);
 
-        // Panel de filtros de fecha
-        JPanel dateFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        dateFilterPanel.setOpaque(false);
-
-        dateFilterPanel.add(new JLabel("Desde:"));
-        JTextField txtFechaInicio = new JTextField(10);
-        dateFilterPanel.add(txtFechaInicio);
-
-        dateFilterPanel.add(new JLabel("Hasta:"));
-        JTextField txtFechaFin = new JTextField(10);
-        dateFilterPanel.add(txtFechaFin);
-
-        JButton btnFiltrar = new JButton("Filtrar");
-        btnFiltrar.setBackground(new Color(52, 152, 219));
-        btnFiltrar.setForeground(Color.WHITE);
-        btnFiltrar.setFocusPainted(false);
-        dateFilterPanel.add(btnFiltrar);
-
-        headerPanel.add(dateFilterPanel, BorderLayout.EAST);
-        panel.add(headerPanel, BorderLayout.NORTH);
-
-        // Panel central con tabla de horarios
         String[] columnNames = {"ID", "Fecha", "Hora Inicio", "Hora Fin", "Disponible", "Solicitud", "Técnico Asignado", "Acciones"};
 
         DefaultTableModel model = new DefaultTableModel(getHorariosTableData(), columnNames) {

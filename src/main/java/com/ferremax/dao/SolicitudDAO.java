@@ -48,7 +48,7 @@ public class SolicitudDAO {
         return null;
     }
 
-    public int create(Solicitud solicitud) {
+    public static int create(Solicitud solicitud) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet generatedKeys = null;
