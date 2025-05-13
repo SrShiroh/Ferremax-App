@@ -3,7 +3,6 @@ package com.ferremax.controller;
 import com.ferremax.dao.UsuarioDAO;
 import com.ferremax.model.RolUsuario;
 import com.ferremax.model.Usuario;
-import com.ferremax.security.PasswordUtils;
 import com.ferremax.security.SessionManager;
 import com.ferremax.gui.AdminMainFrame;
 import com.ferremax.gui.EmployeeMainFrame;
@@ -48,19 +47,17 @@ public class LoginController {
         }
 
         RolUsuario rol = user.getRol();
-        switch (rol) {
-            case ADMINISTRADOR:
-                return new AdminMainFrame();
-            case EMPLEADO:
-            case TECNICO:
-                return new EmployeeMainFrame();
-            default:
+        return switch (rol) {
+            case ADMINISTRADOR -> new AdminMainFrame();
+            case EMPLEADO, TECNICO -> new EmployeeMainFrame();
+            default -> {
                 ExceptionHandler.showError("Rol no reconocido", "Error");
-                return null;
-        }
+                yield null;
+            }
+        };
     }
 
-    public void logout() {
+    public static void logout() {
         SessionManager.clearSession();
     }
 }

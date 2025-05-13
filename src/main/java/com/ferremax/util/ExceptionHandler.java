@@ -18,11 +18,6 @@ public class ExceptionHandler {
         showMessage(message, title, JOptionPane.WARNING_MESSAGE);
     }
 
-    public static void showInfo(String message, String title) {
-        logger.log(Level.INFO, message);
-        showMessage(message, title, JOptionPane.INFORMATION_MESSAGE);
-    }
-
     private static void showMessage(String message, String title, int messageType) {
         SwingUtilities.invokeLater(() -> {
             JOptionPane.showMessageDialog(
@@ -36,17 +31,5 @@ public class ExceptionHandler {
 
     public static void logException(Exception ex, String message) {
         logger.log(Level.SEVERE, message, ex);
-    }
-
-    public static boolean confirmAction(String message, String title) {
-        int option = JOptionPane.showConfirmDialog(
-                null,
-                message,
-                title,
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE
-        );
-
-        return option == JOptionPane.YES_OPTION;
     }
 }

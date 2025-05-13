@@ -17,7 +17,32 @@ import java.util.List;
 
 public class UsuarioDAO {
 
-    public Usuario findById(int id) {
+    public static List<Usuario> getTecnicos() {
+        List<Usuario> tecnicos = new ArrayList<>();
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT * FROM Usuarios WHERE id_rol = 3 ORDER BY id");
+            rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                tecnicos.add(mapResultSetToUsuario(rs));
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al listar técnicos");
+        } finally {
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+
+        return tecnicos;
+    }
+
+    public static Usuario findById(int id) {
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;

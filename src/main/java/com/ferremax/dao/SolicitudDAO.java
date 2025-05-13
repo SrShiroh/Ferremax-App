@@ -15,7 +15,8 @@ import java.util.Date;
 import java.util.List;
 
 public class SolicitudDAO {
-    public Solicitud findById(int id) {
+    public static Solicitud getById(int solicitudId) {
+        Solicitud solicitud = null;
         Connection conn = null;
         PreparedStatement stmt = null;
         ResultSet rs = null;
@@ -31,21 +32,21 @@ public class SolicitudDAO {
                             "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
                             "WHERE s.id = ?"
             );
-            stmt.setInt(1, id);
+            stmt.setInt(1, solicitudId);
             rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return mapResultSetToSolicitud(rs);
+                solicitud = mapResultSetToSolicitud(rs);
             }
         } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al buscar solicitud por ID: " + id);
+            ExceptionHandler.logException(e, "Error al obtener solicitud por ID: " + solicitudId);
         } finally {
             DatabaseConnection.closeResultSet(rs);
             DatabaseConnection.closeStatement(stmt);
             DatabaseConnection.closeConnection(conn);
         }
 
-        return null;
+        return solicitud;
     }
 
     public static int create(Solicitud solicitud) {
@@ -108,7 +109,7 @@ public class SolicitudDAO {
         }
     }
 
-    public boolean update(Solicitud solicitud) {
+    public static boolean update(Solicitud solicitud) {
         Connection conn = null;
         PreparedStatement stmt = null;
 
@@ -155,31 +156,7 @@ public class SolicitudDAO {
         }
     }
 
-    public boolean updateStatus(int solicitudId, EstadoSolicitud nuevoEstado) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "UPDATE Solicitudes SET id_estado = ? WHERE id = ?"
-            );
-
-            stmt.setInt(1, nuevoEstado.getId());
-            stmt.setInt(2, solicitudId);
-
-            int affectedRows = stmt.executeUpdate();
-            return affectedRows > 0;
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al actualizar estado de solicitud: " + solicitudId);
-            return false;
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-    }
-
-    public boolean delete(int id) {
+    public static boolean delete(int id) {
         Connection conn = null;
         PreparedStatement stmt = null;
 
@@ -211,78 +188,6 @@ public class SolicitudDAO {
         }
     }
 
-    public static List<Solicitud> findAll() {
-        return findByCriteria("", null);
-    }
-
-    public List<Solicitud> findByStatus(EstadoSolicitud estado) {
-        return findByCriteria("WHERE s.id_estado = ?", new Object[] { estado.getId() });
-    }
-
-    public List<Solicitud> findByDate(Date fecha) {
-        return findByCriteria("WHERE DATE(s.fecha_programada) = DATE(?)",
-                new Object[] { new Timestamp(fecha.getTime()) });
-    }
-
-    public List<Solicitud> findByTechnician(int idTecnico) {
-        return findByCriteria("WHERE s.id_tecnico = ?", new Object[] { idTecnico });
-    }
-
-    public List<Solicitud> findByRegistrador(int idRegistrador) {
-        return findByCriteria("WHERE s.id_usuario_registro = ?", new Object[] { idRegistrador });
-    }
-
-    public List<Solicitud> findByDateRange(Date fechaInicio, Date fechaFin) {
-        return findByCriteria(
-                "WHERE s.fecha_programada BETWEEN ? AND ?",
-                new Object[] {
-                        new Timestamp(fechaInicio.getTime()),
-                        new Timestamp(fechaFin.getTime())
-                }
-        );
-    }
-
-    private static List<Solicitud> findByCriteria(String whereClause, Object[] params) {
-        List<Solicitud> solicitudes = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            String sql =
-                    "SELECT s.*, " +
-                            "reg.nombre as nombre_registrador, " +
-                            "tec.nombre as nombre_tecnico " +
-                            "FROM Solicitudes s " +
-                            "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
-                            "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
-                            whereClause +
-                            " ORDER BY s.fecha_programada DESC, s.id DESC";
-
-            stmt = conn.prepareStatement(sql);
-
-            if (params != null) {
-                for (int i = 0; i < params.length; i++) {
-                    stmt.setObject(i + 1, params[i]);
-                }
-            }
-
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                solicitudes.add(mapResultSetToSolicitud(rs));
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al buscar solicitudes");
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-
-        return solicitudes;
-    }
     //Enviar todos los datos de las columndas "ID", "Solicitante", "Contacto", "Dirección", "Fecha", "Estado"
     public static List<Solicitud> getSolicitudes() {
         List<Solicitud> solicitudes = new ArrayList<>();
@@ -316,107 +221,6 @@ public class SolicitudDAO {
         }
 
         return solicitudes;
-    }
-
-    public List<Solicitud> search(String term) {
-        List<Solicitud> solicitudes = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            String sql =
-                    "SELECT s.*, " +
-                            "reg.nombre as nombre_registrador, " +
-                            "tec.nombre as nombre_tecnico " +
-                            "FROM Solicitudes s " +
-                            "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
-                            "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
-                            "WHERE s.nombre_solicitante LIKE ? " +
-                            "OR s.correo LIKE ? " +
-                            "OR s.telefono LIKE ? " +
-                            "OR s.direccion LIKE ? " +
-                            "OR CAST(s.id AS CHAR) = ? " +
-                            "ORDER BY s.fecha_programada DESC, s.id DESC";
-
-            stmt = conn.prepareStatement(sql);
-            String searchTerm = "%" + term + "%";
-
-            stmt.setString(1, searchTerm);
-            stmt.setString(2, searchTerm);
-            stmt.setString(3, searchTerm);
-            stmt.setString(4, searchTerm);
-            stmt.setString(5, term); // Búsqueda exacta por ID
-
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                solicitudes.add(mapResultSetToSolicitud(rs));
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al buscar solicitudes: " + term);
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-
-        return solicitudes;
-    }
-
-    public int countByStatus(EstadoSolicitud estado) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "SELECT COUNT(*) FROM Solicitudes WHERE id_estado = ?"
-            );
-            stmt.setInt(1, estado.getId());
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al contar solicitudes por estado: " + estado);
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-
-        return 0;
-    }
-
-    public int countByTechnician(int idTecnico) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "SELECT COUNT(*) FROM Solicitudes WHERE id_tecnico = ?"
-            );
-            stmt.setInt(1, idTecnico);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                return rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al contar solicitudes por técnico: " + idTecnico);
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-
-        return 0;
     }
 
     private static Solicitud mapResultSetToSolicitud(ResultSet rs) throws SQLException {
