@@ -13,18 +13,16 @@ public class Solicitud {
     private String horaProgramada;
     private EstadoSolicitud estado;
     private String notas;
-    private int idUsuarioRegistro; // ID del empleado que registró la solicitud
-    private int idTecnico; // ID del técnico asignado
-    private String nombreTecnico; // Para mostrar en la UI
-    private String nombreUsuarioRegistro; // Para mostrar en la UI
+    private int idUsuarioRegistro;
+    private int idTecnico;
+    private String nombreTecnico;
+    private String nombreUsuarioRegistro;
 
-    // Constructor vacío
     public Solicitud() {
         this.fechaSolicitud = new Date();
         this.estado = EstadoSolicitud.PENDIENTE;
     }
 
-    // Constructor completo
     public Solicitud(int id, String nombreSolicitante, String correo,
                      String telefono, String direccion, Date fechaSolicitud,
                      Date fechaProgramada, String horaProgramada,
@@ -49,14 +47,13 @@ public class Solicitud {
         this.correo = correo;
         this.telefono = telefono;
         this.direccion = direccion;
-        this.fechaSolicitud = new Date(); // Asignar la fecha actual
-        this.fechaProgramada = new Date(); // Asignar la fecha actual
+        this.fechaSolicitud = new Date();
+        this.fechaProgramada = new Date();
         this.horaProgramada = hora;
-        this.estado = EstadoSolicitud.PENDIENTE; // Estado inicial
+        this.estado = EstadoSolicitud.PENDIENTE;
         this.notas = notas;
     }
 
-    // Getters & Setters
     public int getId() {
         return id;
     }

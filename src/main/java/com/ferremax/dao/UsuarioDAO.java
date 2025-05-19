@@ -162,7 +162,6 @@ public class UsuarioDAO {
             stmt.setString(3, usuario.getCorreo());
             stmt.setString(4, usuario.getTelefono());
 
-            // Almacenar contraseña en texto plano
             stmt.setString(5, usuario.getContrasena());
 
             stmt.setInt(6, usuario.getRol().getId());
@@ -256,7 +255,6 @@ public class UsuarioDAO {
                     "UPDATE Usuarios SET contrasena = ? WHERE id = ?"
             );
 
-            // Almacenar contraseña en texto plano
             stmt.setString(1, newPassword);
             stmt.setInt(2, userId);
 
@@ -302,7 +300,6 @@ public class UsuarioDAO {
         try {
             conn = DatabaseConnection.getConnection();
 
-            // Primero obtenemos el estado actual
             PreparedStatement getStmt = conn.prepareStatement(
                     "SELECT activo FROM Usuarios WHERE id = ?"
             );
@@ -317,7 +314,6 @@ public class UsuarioDAO {
             DatabaseConnection.closeResultSet(rs);
             DatabaseConnection.closeStatement(getStmt);
 
-            // Luego cambiamos al estado opuesto
             stmt = conn.prepareStatement(
                     "UPDATE Usuarios SET activo = ? WHERE id = ?"
             );
@@ -343,7 +339,6 @@ public class UsuarioDAO {
         try {
             conn = DatabaseConnection.getConnection();
 
-            // Verificar si tiene solicitudes asociadas como técnico
             PreparedStatement checkStmt = conn.prepareStatement(
                     "SELECT COUNT(*) FROM Solicitudes WHERE id_tecnico = ?"
             );
@@ -351,7 +346,6 @@ public class UsuarioDAO {
             ResultSet rs = checkStmt.executeQuery();
 
             if (rs.next() && rs.getInt(1) > 0) {
-                // Tiene solicitudes asociadas, no se puede eliminar
                 DatabaseConnection.closeResultSet(rs);
                 DatabaseConnection.closeStatement(checkStmt);
                 return false;
@@ -360,7 +354,6 @@ public class UsuarioDAO {
             DatabaseConnection.closeResultSet(rs);
             DatabaseConnection.closeStatement(checkStmt);
 
-            // Verificar si tiene solicitudes registradas
             checkStmt = conn.prepareStatement(
                     "SELECT COUNT(*) FROM Solicitudes WHERE id_usuario_registro = ?"
             );
@@ -368,7 +361,6 @@ public class UsuarioDAO {
             rs = checkStmt.executeQuery();
 
             if (rs.next() && rs.getInt(1) > 0) {
-                // Tiene solicitudes registradas, no se puede eliminar
                 DatabaseConnection.closeResultSet(rs);
                 DatabaseConnection.closeStatement(checkStmt);
                 return false;
@@ -377,7 +369,6 @@ public class UsuarioDAO {
             DatabaseConnection.closeResultSet(rs);
             DatabaseConnection.closeStatement(checkStmt);
 
-            // Proceder con la eliminación
             stmt = conn.prepareStatement(
                     "DELETE FROM Usuarios WHERE id = ?"
             );
@@ -395,7 +386,6 @@ public class UsuarioDAO {
         }
     }
 
-    //Cuenta cuantos empleados activos hay
     public static int getEmpleadosA(){
         int empleadosA = 0;
 

@@ -22,19 +22,16 @@ public class LoginController {
             return false;
         }
 
-        // Buscar usuario
         Usuario user = usuarioDAO.findByUsername(username);
         if (user == null || !user.isActivo()) {
             return false;
         }
 
-        // Verificar contraseña (texto plano)
         boolean validPassword = password.equals(user.getContrasena());
         if (!validPassword) {
             return false;
         }
 
-        // Inicializar sesión
         SessionManager.setLoggedInUser(user);
         usuarioDAO.updateLastLogin(user.getId());
         return true;

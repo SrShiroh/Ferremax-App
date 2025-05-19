@@ -39,14 +39,12 @@ public enum RolUsuario {
     public boolean hasPermission(String permission) {
         switch (this) {
             case ADMINISTRADOR:
-                return true; // Admin tiene todos los permisos
+                return true;
             case TECNICO:
-                // Permisos del técnico
                 return permission.startsWith("solicitud.view") ||
                         permission.equals("solicitud.update.estado") ||
                         permission.equals("horario.view");
             case EMPLEADO:
-                // Permisos del empleado
                 return permission.startsWith("solicitud") ||
                         permission.startsWith("horario") ||
                         permission.equals("usuario.update.self");

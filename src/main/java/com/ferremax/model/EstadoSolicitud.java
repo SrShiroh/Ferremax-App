@@ -55,7 +55,7 @@ public enum EstadoSolicitud {
                 return newStatus == COMPLETADA || newStatus == CANCELADA;
             case COMPLETADA:
             case CANCELADA:
-                return false; // Estados finales
+                return false;
             default:
                 return false;
         }

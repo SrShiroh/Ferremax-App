@@ -14,13 +14,11 @@ public class Usuario {
     private Date ultimoAcceso;
     private boolean activo;
 
-    // Constructor vacío
     public Usuario() {
         this.fechaRegistro = new Date();
         this.activo = true;
     }
 
-    // Constructor completo
     public Usuario(int id, String usuario, String nombre, String correo,
                    String telefono, String contrasena, RolUsuario rol,
                    Date fechaRegistro, Date ultimoAcceso, boolean activo) {
@@ -35,8 +33,6 @@ public class Usuario {
         this.ultimoAcceso = ultimoAcceso;
         this.activo = activo;
     }
-
-    // Getters & Setters
 
     public int getId() {
         return id;

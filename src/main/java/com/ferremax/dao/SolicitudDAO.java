@@ -156,6 +156,8 @@ public class SolicitudDAO {
         }
     }
 
+
+
     public static boolean delete(int id) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -163,7 +165,6 @@ public class SolicitudDAO {
         try {
             conn = DatabaseConnection.getConnection();
 
-            // Primero, liberar cualquier horario asociado
             stmt = conn.prepareStatement(
                     "UPDATE Horarios SET disponible = true, id_solicitud = NULL WHERE id_solicitud = ?"
             );
@@ -171,7 +172,6 @@ public class SolicitudDAO {
             stmt.executeUpdate();
             DatabaseConnection.closeStatement(stmt);
 
-            // Luego, eliminar la solicitud
             stmt = conn.prepareStatement(
                     "DELETE FROM Solicitudes WHERE id = ?"
             );
@@ -188,7 +188,6 @@ public class SolicitudDAO {
         }
     }
 
-    //Enviar todos los datos de las columndas "ID", "Solicitante", "Contacto", "Dirección", "Fecha", "Estado"
     public static List<Solicitud> getSolicitudes() {
         List<Solicitud> solicitudes = new ArrayList<>();
         Connection conn = null;

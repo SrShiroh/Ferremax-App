@@ -11,7 +11,6 @@ public class EmployeeMainFrame extends JFrame {
     private JPanel contentPanel;
     private CardLayout cardLayout;
 
-    // Constantes para los nombres de paneles
     private static final String PANEL_INICIO = "INICIO";
     private static final String PANEL_SOLICITUDES = "SOLICITUDES";
     private static final String PANEL_HORARIOS = "HORARIOS";
@@ -27,36 +26,29 @@ public class EmployeeMainFrame extends JFrame {
     }
 
     private void initComponents() {
-        // Panel principal con diseño BorderLayout
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(new Color(245, 246, 250));
 
-        // Panel superior con información del usuario y logo
         JPanel headerPanel = createHeaderPanel();
         mainPanel.add(headerPanel, BorderLayout.NORTH);
 
-        // Panel lateral con menú de navegación
         JPanel sidePanel = createSidePanel();
         mainPanel.add(sidePanel, BorderLayout.WEST);
 
-        // Panel central con CardLayout para mostrar diferentes secciones
         cardLayout = new CardLayout();
         contentPanel = new JPanel(cardLayout);
         contentPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         contentPanel.setBackground(new Color(245, 246, 250));
 
-        // Añadir los paneles al contenedor con CardLayout
         contentPanel.add(createHomePanel(), PANEL_INICIO);
         contentPanel.add(createSolicitudesPanel(), PANEL_SOLICITUDES);
         contentPanel.add(createHorariosPanel(), PANEL_HORARIOS);
         contentPanel.add(createCredencialesPanel(), PANEL_CREDENCIALES);
 
-        // Mostrar el panel inicial
         cardLayout.show(contentPanel, PANEL_INICIO);
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
 
-        // Panel inferior con información de la empresa
         JPanel footerPanel = createFooterPanel();
         mainPanel.add(footerPanel, BorderLayout.SOUTH);
 
@@ -68,13 +60,11 @@ public class EmployeeMainFrame extends JFrame {
         panel.setBackground(new Color(0, 123, 255));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
-        // Logo o nombre de la empresa (lado izquierdo)
         JLabel lblLogo = new JLabel("FERREMAX");
         lblLogo.setFont(new Font("Arial", Font.BOLD, 20));
         lblLogo.setForeground(Color.WHITE);
         panel.add(lblLogo, BorderLayout.WEST);
 
-        // Panel con información del usuario y botón de cerrar sesión (lado derecho)
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         userPanel.setOpaque(false);
 
@@ -101,10 +91,8 @@ public class EmployeeMainFrame extends JFrame {
         panel.setBackground(new Color(52, 58, 64));
         panel.setPreferredSize(new Dimension(220, getHeight()));
 
-        // Espacio en la parte superior
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Añadir ítems del menú
         addMenuItem(panel, "Inicio", PANEL_INICIO, "home");
         addMenuItem(panel, "Gestión de Solicitudes", PANEL_SOLICITUDES, "file-text");
         addMenuItem(panel, "Gestión de Horarios", PANEL_HORARIOS, "calendar");
@@ -163,7 +151,6 @@ public class EmployeeMainFrame extends JFrame {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
 
-        // Panel de bienvenida
         JPanel welcomePanel = new JPanel(new GridBagLayout());
         welcomePanel.setBackground(new Color(248, 249, 250));
         welcomePanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40));
@@ -223,7 +210,6 @@ public class EmployeeMainFrame extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         panel.setBackground(Color.WHITE);
 
-        // Encabezado con título y buscador
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
@@ -232,7 +218,6 @@ public class EmployeeMainFrame extends JFrame {
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         headerPanel.add(lblTitle, BorderLayout.WEST);
 
-        // Panel de búsqueda
         JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         searchPanel.setOpaque(false);
 
@@ -254,7 +239,6 @@ public class EmployeeMainFrame extends JFrame {
         headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        // Tabla de solicitudes
         String[] columnNames = {"ID", "Solicitante", "Contacto", "Dirección", "Fecha Programada", "Estado", "Acciones"};
         Object[][] data = {
                 {"S001", "Juan García", "555-1234", "Calle Principal #123", "05/05/2025 09:00", "Pendiente", ""},
@@ -266,7 +250,7 @@ public class EmployeeMainFrame extends JFrame {
         DefaultTableModel model = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6; // Solo la columna de acciones es editable
+                return column == 6;
             }
         };
 
@@ -276,7 +260,6 @@ public class EmployeeMainFrame extends JFrame {
         table.getTableHeader().setBackground(new Color(240, 240, 240));
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
-        // Renderizador para estado (colorear según estado)
         table.getColumnModel().getColumn(5).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
             JLabel label = new JLabel(value.toString());
             label.setOpaque(true);
@@ -308,7 +291,6 @@ public class EmployeeMainFrame extends JFrame {
             return label;
         });
 
-        // Renderizador para botones en la columna de acciones
         table.getColumnModel().getColumn(6).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             buttonPanel.setOpaque(false);
@@ -333,7 +315,6 @@ public class EmployeeMainFrame extends JFrame {
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        // Panel de acciones en la parte inferior
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actionsPanel.setOpaque(false);
 
@@ -360,7 +341,6 @@ public class EmployeeMainFrame extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         panel.setBackground(Color.WHITE);
 
-        // Encabezado con título y selector de fechas
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
         headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
@@ -369,7 +349,6 @@ public class EmployeeMainFrame extends JFrame {
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         headerPanel.add(lblTitle, BorderLayout.WEST);
 
-        // Panel de filtros de fecha
         JPanel dateFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         dateFilterPanel.setOpaque(false);
 
@@ -387,11 +366,9 @@ public class EmployeeMainFrame extends JFrame {
         headerPanel.add(dateFilterPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        // Panel central con vista de horarios
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        // Vista en forma de tabla
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(Color.WHITE);
 
@@ -418,7 +395,6 @@ public class EmployeeMainFrame extends JFrame {
         table.getTableHeader().setBackground(new Color(240, 240, 240));
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
-        // Renderizador para disponibilidad
         table.getColumnModel().getColumn(4).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
             JLabel label = new JLabel(value.toString());
             label.setOpaque(true);
@@ -436,7 +412,6 @@ public class EmployeeMainFrame extends JFrame {
             return label;
         });
 
-        // Renderizador para botones en la columna de acciones
         table.getColumnModel().getColumn(6).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
             JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
             buttonPanel.setOpaque(false);
@@ -463,7 +438,6 @@ public class EmployeeMainFrame extends JFrame {
         JScrollPane tableScrollPane = new JScrollPane(table);
         tablePanel.add(tableScrollPane, BorderLayout.CENTER);
 
-        // Vista de calendario (simulada)
         JPanel calendarPanel = new JPanel(new BorderLayout());
         calendarPanel.setBackground(Color.WHITE);
 
@@ -471,7 +445,6 @@ public class EmployeeMainFrame extends JFrame {
         weekView.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         weekView.setBackground(Color.WHITE);
 
-        // Encabezados de los días
         String[] days = {"Lunes", "Martes", "Miércoles", "Jueves", "Viernes"};
         for (String day : days) {
             JLabel lblDay = new JLabel(day, JLabel.CENTER);
@@ -481,7 +454,6 @@ public class EmployeeMainFrame extends JFrame {
             weekView.add(lblDay);
         }
 
-        // Fechas del calendario
         String[] dates = {"05/05", "06/05", "07/05", "08/05", "09/05"};
         for (String date : dates) {
             JLabel lblDate = new JLabel(date, JLabel.CENTER);
@@ -489,19 +461,16 @@ public class EmployeeMainFrame extends JFrame {
             weekView.add(lblDate);
         }
 
-        // Horas y eventos
         String[] timeSlots = {"9:00-11:00", "11:30-13:30", "14:00-16:00", "16:30-18:30"};
 
         for (String timeSlot : timeSlots) {
-            // Añadir la etiqueta de hora a la izquierda
-            for (int i = 0; i < 5; i++) { // 5 días
+            for (int i = 0; i < 5; i++) {
                 JPanel slotPanel = new JPanel(new BorderLayout());
                 slotPanel.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
 
                 if (i == 0 && timeSlot.equals("9:00-11:00") ||
                         i == 0 && timeSlot.equals("11:30-13:30") ||
                         i == 2 && timeSlot.equals("9:00-11:00")) {
-                    // Estas son citas ocupadas
                     slotPanel.setBackground(new Color(248, 215, 218));
                     JLabel lblAppointment = new JLabel("<html><center>Ocupado<br>Cliente: " +
                             (i == 0 && timeSlot.equals("9:00-11:00") ? "Juan García" :
@@ -532,7 +501,6 @@ public class EmployeeMainFrame extends JFrame {
 
         panel.add(tabbedPane, BorderLayout.CENTER);
 
-        // Panel de acciones en la parte inferior
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
         actionsPanel.setOpaque(false);
 
@@ -568,7 +536,6 @@ public class EmployeeMainFrame extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Información actual del usuario
         JPanel userInfoPanel = new JPanel(new GridBagLayout());
         userInfoPanel.setBackground(new Color(248, 249, 250));
         userInfoPanel.setBorder(BorderFactory.createCompoundBorder(
@@ -611,7 +578,6 @@ public class EmployeeMainFrame extends JFrame {
         contentPanel.add(userInfoPanel, gbc);
         gbc.gridwidth = 1;
 
-        // Correo electrónico
         gbc.gridx = 0;
         gbc.gridy = 1;
         contentPanel.add(new JLabel("Correo Electrónico Actual:"), gbc);
@@ -631,7 +597,6 @@ public class EmployeeMainFrame extends JFrame {
         ));
         contentPanel.add(txtNuevoCorreo, gbc);
 
-        // Teléfono
         gbc.gridx = 0;
         gbc.gridy = 3;
         contentPanel.add(new JLabel("Teléfono Actual:"), gbc);
@@ -651,14 +616,12 @@ public class EmployeeMainFrame extends JFrame {
         ));
         contentPanel.add(txtNuevoTelefono, gbc);
 
-        // Separador
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         contentPanel.add(new JSeparator(), gbc);
         gbc.gridwidth = 1;
 
-        // Contraseñas
         gbc.gridx = 0;
         gbc.gridy = 6;
         contentPanel.add(new JLabel("Contraseña Actual (*):"), gbc);
@@ -692,7 +655,6 @@ public class EmployeeMainFrame extends JFrame {
         ));
         contentPanel.add(pwdConfirmar, gbc);
 
-        // Panel de botones
         gbc.gridx = 0;
         gbc.gridy = 9;
         gbc.gridwidth = 2;
@@ -719,7 +681,6 @@ public class EmployeeMainFrame extends JFrame {
 
         contentPanel.add(buttonPanel, gbc);
 
-        // Añadir mensaje informativo
         gbc.gridx = 0;
         gbc.gridy = 10;
         gbc.gridwidth = 2;
@@ -729,7 +690,6 @@ public class EmployeeMainFrame extends JFrame {
         lblInfo.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
         contentPanel.add(lblInfo, gbc);
 
-        // Panel principal centrado
         JPanel centerPanel = new JPanel(new GridBagLayout());
         centerPanel.setBackground(Color.WHITE);
         centerPanel.add(contentPanel);

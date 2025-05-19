@@ -12,7 +12,6 @@ public class DatabaseConnection {
 
     static {
         try {
-            // Cargar el driver JDBC
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
             logger.log(Level.SEVERE, "Error al cargar el driver MySQL", e);
@@ -50,23 +49,6 @@ public class DatabaseConnection {
             } catch (SQLException e) {
                 logger.log(Level.WARNING, "Error al cerrar resultset", e);
             }
-        }
-    }
-
-    private static void setParameters(PreparedStatement stmt, Object[] params) throws SQLException {
-        if (params != null) {
-            for (int i = 0; i < params.length; i++) {
-                stmt.setObject(i + 1, params[i]);
-            }
-        }
-    }
-
-    public static void testConnection() throws SQLException {
-        Connection conn = null;
-        try {
-            conn = getConnection();
-        } finally {
-            closeConnection(conn);
         }
     }
 }
