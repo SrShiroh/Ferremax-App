@@ -17,6 +17,10 @@ public class LoginController {
         usuarioDAO = new UsuarioDAO();
     }
 
+    public static Usuario getUsuarioLogueado() {
+        return SessionManager.getLoggedInUser();
+    }
+
     public boolean authenticate(String username, String password) {
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             return false;

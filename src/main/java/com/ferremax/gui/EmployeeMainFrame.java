@@ -12,6 +12,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
@@ -57,7 +59,7 @@ public class EmployeeMainFrame extends JFrame {
 
         contentPanel.add(createHomePanel(), PANEL_INICIO);
         contentPanel.add(createSolicitudesPanel(), PANEL_SOLICITUDES);
-        contentPanel.add(createHorariosPanel(), PANEL_CLIENTES);
+        contentPanel.add(createClientesPanel(), PANEL_CLIENTES);
         contentPanel.add(createCredencialesPanel(), PANEL_CREDENCIALES);
 
         cardLayout.show(contentPanel, PANEL_INICIO);
@@ -154,12 +156,10 @@ public class EmployeeMainFrame extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 cardLayout.show(contentPanel, panelName);
             }
-
             @Override
             public void mouseEntered(MouseEvent e) {
                 menuItem.setBackground(new Color(73, 80, 87));
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
                 menuItem.setBackground(new Color(52, 58, 64));
@@ -206,8 +206,8 @@ public class EmployeeMainFrame extends JFrame {
         JPanel statsPanel = new JPanel(new GridLayout(1, 2, 20, 0));
         statsPanel.setOpaque(false);
 
-        statsPanel.add(createStatCard("Solicitudes Pendientes", "5", new Color(0, 123, 255)));
-        statsPanel.add(createStatCard("Horarios Disponibles", "12", new Color(40, 167, 69)));
+        statsPanel.add(createStatCard("Solicitudes Pendientes", String.valueOf(SolicitudDAO.getSolicitudesP()), new Color(0, 123, 255)));
+        statsPanel.add(createStatCard("Reparaciones Realizadas", String.valueOf(SolicitudDAO.getReparacionesR()), new Color(40, 167, 69)));
 
         welcomePanel.add(statsPanel, gbc);
 
@@ -1016,184 +1016,316 @@ public class EmployeeMainFrame extends JFrame {
         return -1;
     }
 
-    private JPanel createHorariosPanel() {
+    private JPanel createClientesPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 20));
         panel.setBackground(Color.WHITE);
+        panel.setName(PANEL_CLIENTES);
 
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
-        JLabel lblTitle = new JLabel("Gestión de Horarios");
+        JLabel lblTitle = new JLabel("Gestión de Clientes");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         headerPanel.add(lblTitle, BorderLayout.WEST);
 
-        JPanel dateFilterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        dateFilterPanel.setOpaque(false);
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        searchPanel.setOpaque(false);
+        JTextField txtSearch = new JTextField(20);
+        JButton btnSearch = new JButton("Buscar");
+        btnSearch.setBackground(new Color(52, 152, 219));
+        btnSearch.setForeground(Color.BLACK);
+        btnSearch.setFocusPainted(false);
 
-        dateFilterPanel.add(new JLabel("Ver horarios desde:"));
-        JTextField txtFecha = new JTextField(10);
-        txtFecha.setText("05/05/2025");
-        dateFilterPanel.add(txtFecha);
+        searchPanel.add(new JLabel("Cliente: "));
+        searchPanel.add(txtSearch);
+        searchPanel.add(btnSearch);
 
-        JButton btnFiltrar = new JButton("Filtrar");
-        btnFiltrar.setBackground(new Color(0, 123, 255));
-        btnFiltrar.setForeground(Color.WHITE);
-        btnFiltrar.setFocusPainted(false);
-        dateFilterPanel.add(btnFiltrar);
-
-        headerPanel.add(dateFilterPanel, BorderLayout.EAST);
+        headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setFont(new Font("Arial", Font.PLAIN, 14));
+        java.util.List<String> clientesNombres = obtenerClientesUnicos();
 
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBackground(Color.WHITE);
+        JPanel clientesContainer = new JPanel();
+        clientesContainer.setLayout(new BorderLayout());
+        clientesContainer.setBackground(Color.WHITE);
 
-        String[] columnNames = {"ID", "Fecha", "Hora Inicio", "Hora Fin", "Disponible", "Cliente", "Acciones"};
-        Object[][] data = {
-                {"H001", "05/05/2025", "09:00", "11:00", "No", "Juan García", ""},
-                {"H002", "05/05/2025", "11:30", "13:30", "No", "Ana Martínez", ""},
-                {"H003", "06/05/2025", "09:00", "11:00", "Sí", "-", ""},
-                {"H004", "06/05/2025", "11:30", "13:30", "Sí", "-", ""},
-                {"H005", "07/05/2025", "09:00", "11:00", "No", "Carlos López", ""},
-                {"H006", "07/05/2025", "11:30", "13:30", "Sí", "-", ""}
-        };
+        JPanel clientesGrid = new JPanel();
+        clientesGrid.setLayout(new BoxLayout(clientesGrid, BoxLayout.Y_AXIS));
+        clientesGrid.setBackground(Color.WHITE);
 
-        DefaultTableModel model = new DefaultTableModel(data, columnNames) {
+        for (String nombreCliente : clientesNombres) {
+            JPanel clientePanel = crearPanelCliente(nombreCliente);
+            clientesGrid.add(clientePanel);
+            clientesGrid.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
+
+        JScrollPane scrollPane = new JScrollPane(clientesGrid);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+
+        clientesGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+
+        clientesContainer.add(scrollPane, BorderLayout.CENTER);
+
+        panel.add(clientesContainer, BorderLayout.CENTER);
+
+        btnSearch.addActionListener(e -> {
+            String busqueda = txtSearch.getText().trim().toLowerCase();
+            filtrarClientes(clientesGrid, busqueda);
+        });
+
+        txtSearch.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                    String busqueda = txtSearch.getText().trim().toLowerCase();
+                    filtrarClientes(clientesGrid, busqueda);
+                }
+            }
+        });
+
+        return panel;
+    }
+
+    private java.util.List<String> obtenerClientesUnicos() {
+        java.util.List<String> clientesUnicos = new ArrayList<>();
+        java.util.List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
+
+        java.util.Set<String> nombresUnicos = new java.util.HashSet<>();
+
+        for (Solicitud solicitud : solicitudes) {
+            String nombreCliente = solicitud.getNombreSolicitante();
+            if (nombreCliente != null && !nombreCliente.isEmpty()) {
+                nombresUnicos.add(nombreCliente);
+            }
+        }
+
+        clientesUnicos.addAll(nombresUnicos);
+        java.util.Collections.sort(clientesUnicos);
+
+        return clientesUnicos;
+    }
+
+    private JPanel crearPanelCliente(String nombreCliente) {
+        JPanel panel = new JPanel(new BorderLayout(10, 0));
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        panel.setName("cliente-" + nombreCliente.replaceAll("\\s+", "_").toLowerCase());
+
+        JPanel infoPanel = new JPanel(new GridLayout(2, 1));
+        infoPanel.setOpaque(false);
+
+        JLabel lblNombre = new JLabel(nombreCliente);
+        lblNombre.setFont(new Font("Arial", Font.BOLD, 16));
+        infoPanel.add(lblNombre);
+
+        int cantidadSolicitudes = contarSolicitudesPorCliente(nombreCliente);
+        JLabel lblCantidad = new JLabel("Solicitudes: " + cantidadSolicitudes);
+        lblCantidad.setFont(new Font("Arial", Font.PLAIN, 14));
+        lblCantidad.setForeground(new Color(100, 100, 100));
+        infoPanel.add(lblCantidad);
+
+        panel.add(infoPanel, BorderLayout.WEST);
+
+        JPanel accionesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        accionesPanel.setOpaque(false);
+
+        JButton btnHistorial = new JButton("Ver Historial");
+        btnHistorial.setBackground(new Color(52, 152, 219));
+        btnHistorial.setForeground(Color.BLACK);
+        btnHistorial.setFocusPainted(false);
+        btnHistorial.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnHistorial.addActionListener(e -> verHistorialCliente(nombreCliente));
+
+        accionesPanel.add(btnHistorial);
+        panel.add(accionesPanel, BorderLayout.EAST);
+
+        return panel;
+    }
+
+
+    private void verHistorialCliente(String nombreCliente) {
+        java.util.List<Solicitud> solicitudesCliente = obtenerSolicitudesPorCliente(nombreCliente);
+
+        JDialog dialog = new JDialog(this, "Historial de " + nombreCliente, true);
+        dialog.setSize(800, 500);
+        dialog.setLocationRelativeTo(this);
+
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        panel.setBackground(Color.WHITE);
+
+        JLabel lblTitle = new JLabel("Historial de Reparaciones: " + nombreCliente);
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(lblTitle, BorderLayout.NORTH);
+
+        String[] columnNames = {"ID", "Fecha Solicitud", "Fecha Programada", "Dirección", "Estado", "Técnico"};
+
+        Object[][] data = new Object[solicitudesCliente.size()][6];
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
+
+        for (int i = 0; i < solicitudesCliente.size(); i++) {
+            Solicitud s = solicitudesCliente.get(i);
+            data[i][0] = s.getId();
+            data[i][1] = s.getFechaSolicitud() != null ? dateFormat.format(s.getFechaSolicitud()) : "";
+            data[i][2] = s.getFechaProgramada() != null ? dateFormat.format(s.getFechaProgramada()) : "";
+            data[i][3] = s.getDireccion();
+            data[i][4] = s.getEstado().getNombre();
+            data[i][5] = s.getNombreTecnico() != null ? s.getNombreTecnico() : "Sin asignar";
+        }
+
+        DefaultTableModel tableModel = new DefaultTableModel(data, columnNames) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return column == 6;
+                return false;
             }
         };
 
-        JTable table = new JTable(model);
-        table.setRowHeight(40);
-        table.setShowVerticalLines(false);
+        JTable table = new JTable(tableModel);
+        table.setRowHeight(30);
         table.getTableHeader().setBackground(new Color(240, 240, 240));
         table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
-        table.getColumnModel().getColumn(4).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
-            JLabel label = new JLabel(value.toString());
+        table.setDefaultRenderer(Object.class, (table1, value, isSelected, hasFocus, row, column) -> {
+            JLabel label = new JLabel(value != null ? value.toString() : "");
             label.setOpaque(true);
             label.setHorizontalAlignment(JLabel.CENTER);
+            label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
-            if ("Sí".equals(value.toString())) {
-                label.setBackground(new Color(212, 237, 218));
-                label.setForeground(new Color(21, 87, 36));
+            if (column == 4) {
+                String estado = value.toString();
+                switch (estado) {
+                    case "Pendiente":
+                        label.setBackground(new Color(253, 237, 176));
+                        break;
+                    case "Asignada":
+                        label.setBackground(new Color(214, 234, 248));
+                        break;
+                    case "En Progreso":
+                        label.setBackground(new Color(217, 237, 247));
+                        break;
+                    case "Completada":
+                        label.setBackground(new Color(212, 237, 218));
+                        break;
+                    case "Cancelada":
+                        label.setBackground(new Color(248, 215, 218));
+                        break;
+                    default:
+                        label.setBackground(isSelected ? table1.getSelectionBackground() : Color.WHITE);
+                }
             } else {
-                label.setBackground(new Color(248, 215, 218));
-                label.setForeground(new Color(114, 28, 36));
+                label.setBackground(isSelected ? table1.getSelectionBackground() : Color.WHITE);
             }
 
-            label.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
+            label.setForeground(isSelected ? table1.getSelectionForeground() : Color.BLACK);
             return label;
         });
 
-        table.getColumnModel().getColumn(6).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
-            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
-            buttonPanel.setOpaque(false);
+        JScrollPane scrollPane = new JScrollPane(table);
+        panel.add(scrollPane, BorderLayout.CENTER);
 
-            String disponible = (String) table1.getValueAt(row, 4);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        buttonPanel.setOpaque(false);
 
-            if ("Sí".equals(disponible)) {
-                JButton btnAsignar = new JButton("Asignar");
-                btnAsignar.setBackground(new Color(40, 167, 69));
-                btnAsignar.setForeground(Color.WHITE);
-                btnAsignar.setFocusPainted(false);
-                buttonPanel.add(btnAsignar);
+        JButton btnVerDetalles = new JButton("Ver Detalles");
+        btnVerDetalles.setBackground(new Color(52, 152, 219));
+        btnVerDetalles.setForeground(Color.BLACK);
+        btnVerDetalles.setFocusPainted(false);
+        btnVerDetalles.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow >= 0) {
+                int solicitudId = (int) table.getValueAt(selectedRow, 0);
+                dialog.dispose();
+                verSolicitud(solicitudId);
             } else {
-                JButton btnVer = new JButton("Ver Detalles");
-                btnVer.setBackground(new Color(0, 123, 255));
-                btnVer.setForeground(Color.WHITE);
-                btnVer.setFocusPainted(false);
-                buttonPanel.add(btnVer);
+                JOptionPane.showMessageDialog(dialog,
+                        "Por favor, seleccione una solicitud para ver sus detalles",
+                        "Selección Requerida",
+                        JOptionPane.INFORMATION_MESSAGE);
             }
-
-            return buttonPanel;
         });
 
-        JScrollPane tableScrollPane = new JScrollPane(table);
-        tablePanel.add(tableScrollPane, BorderLayout.CENTER);
+        JButton btnCerrar = new JButton("Cerrar");
+        btnCerrar.setBackground(new Color(108, 117, 125));
+        btnCerrar.setForeground(Color.BLACK);
+        btnCerrar.setFocusPainted(false);
+        btnCerrar.addActionListener(e -> dialog.dispose());
 
-        JPanel calendarPanel = new JPanel(new BorderLayout());
-        calendarPanel.setBackground(Color.WHITE);
+        buttonPanel.add(btnVerDetalles);
+        buttonPanel.add(btnCerrar);
 
-        JPanel weekView = new JPanel(new GridLayout(0, 5, 5, 5));
-        weekView.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        weekView.setBackground(Color.WHITE);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
 
-        String[] days = {"Lunes", "Martes", "Miércoles", "Jueves", "Viernes"};
-        for (String day : days) {
-            JLabel lblDay = new JLabel(day, JLabel.CENTER);
-            lblDay.setFont(new Font("Arial", Font.BOLD, 14));
-            lblDay.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(220, 220, 220)));
-            lblDay.setPreferredSize(new Dimension(150, 40));
-            weekView.add(lblDay);
-        }
+        dialog.setContentPane(panel);
+        dialog.setVisible(true);
+    }
 
-        String[] dates = {"05/05", "06/05", "07/05", "08/05", "09/05"};
-        for (String date : dates) {
-            JLabel lblDate = new JLabel(date, JLabel.CENTER);
-            lblDate.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)));
-            weekView.add(lblDate);
-        }
+    private java.util.List<Solicitud> obtenerSolicitudesPorCliente(String nombreCliente) {
+        java.util.List<Solicitud> solicitudesCliente = new ArrayList<>();
+        java.util.List<Solicitud> todasSolicitudes = SolicitudDAO.getSolicitudes();
 
-        String[] timeSlots = {"9:00-11:00", "11:30-13:30", "14:00-16:00", "16:30-18:30"};
-
-        for (String timeSlot : timeSlots) {
-            for (int i = 0; i < 5; i++) {
-                JPanel slotPanel = new JPanel(new BorderLayout());
-                slotPanel.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
-
-                if (i == 0 && timeSlot.equals("9:00-11:00") ||
-                        i == 0 && timeSlot.equals("11:30-13:30") ||
-                        i == 2 && timeSlot.equals("9:00-11:00")) {
-                    slotPanel.setBackground(new Color(248, 215, 218));
-                    JLabel lblAppointment = new JLabel("<html><center>Ocupado<br>Cliente: " +
-                            (i == 0 && timeSlot.equals("9:00-11:00") ? "Juan García" :
-                                    i == 0 && timeSlot.equals("11:30-13:30") ? "Ana Martínez" : "Carlos López") +
-                            "</center></html>", JLabel.CENTER);
-                    slotPanel.add(lblAppointment, BorderLayout.CENTER);
-                } else {
-                    slotPanel.setBackground(new Color(212, 237, 218));
-                    JLabel lblFree = new JLabel("Disponible", JLabel.CENTER);
-                    slotPanel.add(lblFree, BorderLayout.CENTER);
-
-                    JButton btnReservar = new JButton("Reservar");
-                    btnReservar.setBackground(new Color(40, 167, 69));
-                    btnReservar.setForeground(Color.WHITE);
-                    btnReservar.setFocusPainted(false);
-                    slotPanel.add(btnReservar, BorderLayout.SOUTH);
-                }
-
-                weekView.add(slotPanel);
+        for (Solicitud solicitud : todasSolicitudes) {
+            if (nombreCliente.equals(solicitud.getNombreSolicitante())) {
+                solicitudesCliente.add(solicitud);
             }
         }
 
-        JScrollPane calendarScrollPane = new JScrollPane(weekView);
-        calendarPanel.add(calendarScrollPane, BorderLayout.CENTER);
+        solicitudesCliente.sort((s1, s2) -> {
+            if (s1.getFechaSolicitud() == null) return 1;
+            if (s2.getFechaSolicitud() == null) return -1;
+            return s2.getFechaSolicitud().compareTo(s1.getFechaSolicitud());
+        });
 
-        tabbedPane.addTab("Vista Tabla", tablePanel);
-        tabbedPane.addTab("Vista Calendario", calendarPanel);
+        return solicitudesCliente;
+    }
 
-        panel.add(tabbedPane, BorderLayout.CENTER);
+    private int contarSolicitudesPorCliente(String nombreCliente) {
+        int contador = 0;
+        java.util.List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        actionsPanel.setOpaque(false);
+        for (Solicitud solicitud : solicitudes) {
+            if (nombreCliente.equals(solicitud.getNombreSolicitante())) {
+                contador++;
+            }
+        }
 
-        JButton btnCrear = new JButton("Crear Horario");
-        btnCrear.setBackground(new Color(40, 167, 69));
-        btnCrear.setForeground(Color.WHITE);
-        btnCrear.setFocusPainted(false);
-        btnCrear.setFont(new Font("Arial", Font.BOLD, 14));
+        return contador;
+    }
 
-        actionsPanel.add(btnCrear);
+    private void filtrarClientes(JPanel clientesGrid, String busqueda) {
+        for (Component comp : clientesGrid.getComponents()) {
+            if (comp instanceof JPanel) {
+                JPanel clientePanel = (JPanel) comp;
+                String nombrePanel = clientePanel.getName();
 
-        panel.add(actionsPanel, BorderLayout.SOUTH);
+                if (nombrePanel != null && nombrePanel.startsWith("cliente-")) {
+                    for (Component child : clientePanel.getComponents()) {
+                        if (child instanceof JPanel) {
+                            JPanel infoPanel = (JPanel) child;
+                            for (Component infoChild : infoPanel.getComponents()) {
+                                if (infoChild instanceof JLabel) {
+                                    JLabel lblNombre = (JLabel) infoChild;
+                                    String nombreCliente = lblNombre.getText().toLowerCase();
 
-        return panel;
+                                    boolean coincide = busqueda.isEmpty() || nombreCliente.contains(busqueda);
+                                    clientePanel.setVisible(coincide);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        clientesGrid.revalidate();
+        clientesGrid.repaint();
     }
 
     private JPanel createCredencialesPanel() {
@@ -1231,7 +1363,7 @@ public class EmployeeMainFrame extends JFrame {
         infoGbc.gridy = 0;
         userInfoPanel.add(new JLabel("Usuario:"), infoGbc);
         infoGbc.gridx = 1;
-        JLabel lblUsuario = new JLabel("empleado1");
+        JLabel lblUsuario = new JLabel(LoginController.getUsuarioLogueado().getUsuario());
         lblUsuario.setFont(new Font("Arial", Font.BOLD, 14));
         userInfoPanel.add(lblUsuario, infoGbc);
 
@@ -1239,7 +1371,7 @@ public class EmployeeMainFrame extends JFrame {
         infoGbc.gridy = 1;
         userInfoPanel.add(new JLabel("Nombre:"), infoGbc);
         infoGbc.gridx = 1;
-        JLabel lblNombre = new JLabel("Juan Pérez");
+        JLabel lblNombre = new JLabel(LoginController.getUsuarioLogueado().getNombre());
         lblNombre.setFont(new Font("Arial", Font.BOLD, 14));
         userInfoPanel.add(lblNombre, infoGbc);
 
@@ -1247,7 +1379,7 @@ public class EmployeeMainFrame extends JFrame {
         infoGbc.gridy = 2;
         userInfoPanel.add(new JLabel("Rol:"), infoGbc);
         infoGbc.gridx = 1;
-        JLabel lblRol = new JLabel("Empleado");
+        JLabel lblRol = new JLabel(LoginController.getUsuarioLogueado().getRol().getNombre());
         lblRol.setFont(new Font("Arial", Font.BOLD, 14));
         userInfoPanel.add(lblRol, infoGbc);
 
@@ -1261,7 +1393,14 @@ public class EmployeeMainFrame extends JFrame {
         gbc.gridy = 1;
         contentPanel.add(new JLabel("Correo Electrónico Actual:"), gbc);
         gbc.gridx = 1;
-        JLabel lblCorreoActual = new JLabel("juan.perez@ferremax.com");
+        JLabel lblCorreoActual;
+        if (LoginController.getUsuarioLogueado().getCorreo() == null) {
+            lblCorreoActual = new JLabel("Sin asignar");
+        } else {
+            lblCorreoActual = new JLabel(LoginController.getUsuarioLogueado().getCorreo());
+        }
+
+
         lblCorreoActual.setFont(new Font("Arial", Font.ITALIC, 14));
         contentPanel.add(lblCorreoActual, gbc);
 
@@ -1280,7 +1419,13 @@ public class EmployeeMainFrame extends JFrame {
         gbc.gridy = 3;
         contentPanel.add(new JLabel("Teléfono Actual:"), gbc);
         gbc.gridx = 1;
-        JLabel lblTelefonoActual = new JLabel("555-123-4567");
+        JLabel lblTelefonoActual = null;
+        if (LoginController.getUsuarioLogueado().getTelefono() != null) {
+            lblTelefonoActual = new JLabel(LoginController.getUsuarioLogueado().getTelefono());
+        } else {
+            lblTelefonoActual = new JLabel("Sin asignar");
+        }
+
         lblTelefonoActual.setFont(new Font("Arial", Font.ITALIC, 14));
         contentPanel.add(lblTelefonoActual, gbc);
 
@@ -1325,7 +1470,7 @@ public class EmployeeMainFrame extends JFrame {
 
         gbc.gridx = 0;
         gbc.gridy = 8;
-        contentPanel.add(new JLabel("Confirmar Nueva Contraseña:"), gbc);
+        contentPanel.add(new JLabel("Confirmar Nueva Contraseña (*):"), gbc);
         gbc.gridx = 1;
         JPasswordField pwdConfirmar = new JPasswordField(20);
         pwdConfirmar.setBorder(BorderFactory.createCompoundBorder(
@@ -1342,14 +1487,14 @@ public class EmployeeMainFrame extends JFrame {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
         JButton btnActualizar = new JButton("Actualizar Información");
-        btnActualizar.setBackground(new Color(0, 123, 255));
+        btnActualizar.setBackground(new Color(0, 255, 0));
         btnActualizar.setForeground(Color.WHITE);
         btnActualizar.setFocusPainted(false);
         btnActualizar.setFont(new Font("Arial", Font.BOLD, 14));
         btnActualizar.setPreferredSize(new Dimension(200, 40));
 
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setBackground(new Color(108, 117, 125));
+        btnCancelar.setBackground(new Color(255, 0, 0));
         btnCancelar.setForeground(Color.WHITE);
         btnCancelar.setFocusPainted(false);
         btnCancelar.setFont(new Font("Arial", Font.PLAIN, 14));
