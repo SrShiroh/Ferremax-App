@@ -116,34 +116,6 @@ public class UsuarioDAO {
         return usuarios;
     }
 
-    public List<Usuario> findByRole(RolUsuario rol) {
-        List<Usuario> usuarios = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "SELECT * FROM Usuarios WHERE id_rol = ? ORDER BY nombre"
-            );
-            stmt.setInt(1, rol.getId());
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                usuarios.add(mapResultSetToUsuario(rs));
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al listar usuarios por rol: " + rol);
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-
-        return usuarios;
-    }
-
     public boolean create(Usuario usuario) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -386,98 +358,6 @@ public class UsuarioDAO {
         }
     }
 
-    public static int getEmpleadosA(){
-        int empleadosA = 0;
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Usuarios WHERE activo = 1");
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                empleadosA = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al contar empleados activos");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-        return empleadosA;
-    }
-
-    public static int getReparacionesReg(){
-        int reparacionesReg = 0;
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes");
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                reparacionesReg = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al contar el total de solicitudes");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-        return reparacionesReg;
-    }
-
-    public static int getReparacionesR(){
-        int reparacionesR = 0;
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 4");
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                reparacionesR = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al contar reparaciones realizadas");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-        return reparacionesR;
-    }
-
-    public static int getSolicitudesP(){
-        int solicitudesP = 0;
-
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 1");
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                solicitudesP = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al contar solicitudes pendientes");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-        return solicitudesP;
-    }
-
     private static Usuario mapResultSetToUsuario(ResultSet rs) throws SQLException {
         Usuario usuario = new Usuario();
         usuario.setId(rs.getInt("id"));
@@ -497,30 +377,5 @@ public class UsuarioDAO {
         usuario.setActivo(rs.getBoolean("activo"));
 
         return usuario;
-    }
-
-    public static List<Usuario> getEmpleados() {
-        List<Usuario> empleados = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT * FROM Usuarios WHERE id_rol = 2 or id_rol = 3 ORDER BY id");
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                empleados.add(mapResultSetToUsuario(rs));
-            }
-        } catch (SQLException e) {
-            ExceptionHandler.logException(e, "Error al listar empleados");
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
-        }
-
-        return empleados;
     }
 }

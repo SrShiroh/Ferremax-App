@@ -320,15 +320,10 @@ public class AdminMainFrame extends JFrame {
         dashboardPanel.setOpaque(false);
         dashboardPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
 
-        String solicitudesP = String.valueOf(UsuarioDAO.getSolicitudesP());
-        String clientesA = String.valueOf(UsuarioDAO.getEmpleadosA());
-        String reparacionesReg = String.valueOf(UsuarioDAO.getReparacionesReg());
-        String reparacionesR = String.valueOf(UsuarioDAO.getReparacionesR());
-
-        dashboardPanel.add(createStatCard("Empleados Activos", clientesA, new Color(231, 76, 60)));
-        dashboardPanel.add(createStatCard("Solicitudes Pendientes", solicitudesP, new Color(52, 152, 219)));
-        dashboardPanel.add(createStatCard("Reparaciones Realizadas", reparacionesR, new Color(46, 204, 113)));
-        dashboardPanel.add(createStatCard("Reparaciones Registradas", reparacionesReg, new Color(155, 89, 182)));
+        dashboardPanel.add(createStatCard("Empleados Activos", String.valueOf(SolicitudDAO.getEmpleadosA()), new Color(231, 76, 60)));
+        dashboardPanel.add(createStatCard("Solicitudes Pendientes", String.valueOf(SolicitudDAO.getSolicitudesP()), new Color(52, 152, 219)));
+        dashboardPanel.add(createStatCard("Reparaciones Realizadas", String.valueOf(SolicitudDAO.getReparacionesR()), new Color(46, 204, 113)));
+        dashboardPanel.add(createStatCard("Reparaciones Registradas", String.valueOf(SolicitudDAO.getReparacionesReg()), new Color(155, 89, 182)));
 
         panel.add(dashboardPanel, BorderLayout.CENTER);
 
@@ -645,7 +640,6 @@ public class AdminMainFrame extends JFrame {
 
                 for (Component comp : contentPanel.getComponents()) {
                     if (comp instanceof JPanel && formularioName.equals(comp.getName())) {
-                        formularioPanel = (JPanel) comp;
                         panelExists = true;
                         break;
                     }
@@ -907,9 +901,7 @@ public class AdminMainFrame extends JFrame {
             }
         });
 
-        btnCancelar.addActionListener(e -> {
-            cardLayout.show(contentPanel, PANEL_SOLICITUDES);
-        });
+        btnCancelar.addActionListener(e -> {cardLayout.show(contentPanel, PANEL_SOLICITUDES);});
 
         return panel;
     }
@@ -1113,9 +1105,7 @@ public class AdminMainFrame extends JFrame {
             }
         });
 
-        btnCancelar.addActionListener(e -> {
-            cardLayout.show(contentPanel, PANEL_SOLICITUDES);
-        });
+        btnCancelar.addActionListener(e -> {cardLayout.show(contentPanel, PANEL_SOLICITUDES);});
 
         return panel;
     }
@@ -1342,9 +1332,7 @@ public class AdminMainFrame extends JFrame {
         btnAgregar.setForeground(Color.BLACK);
         btnAgregar.setFocusPainted(false);
         btnAgregar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnAgregar.addActionListener(e -> {
-            mostrarFormularioCrearUsuario();
-        });
+        btnAgregar.addActionListener(e -> {mostrarFormularioCrearUsuario();});
 
         actionsPanel.add(btnAgregar);
 
@@ -1514,9 +1502,7 @@ public class AdminMainFrame extends JFrame {
             }
         });
 
-        btnCancelar.addActionListener(e -> {
-            cardLayout.show(contentPanel, PANEL_USUARIOS);
-        });
+        btnCancelar.addActionListener(e -> {cardLayout.show(contentPanel, PANEL_USUARIOS);});
 
         return panel;
     }

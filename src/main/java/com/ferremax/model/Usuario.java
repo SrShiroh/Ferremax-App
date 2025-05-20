@@ -19,21 +19,6 @@ public class Usuario {
         this.activo = true;
     }
 
-    public Usuario(int id, String usuario, String nombre, String correo,
-                   String telefono, String contrasena, RolUsuario rol,
-                   Date fechaRegistro, Date ultimoAcceso, boolean activo) {
-        this.id = id;
-        this.usuario = usuario;
-        this.nombre = nombre;
-        this.correo = correo;
-        this.telefono = telefono;
-        this.contrasena = contrasena;
-        this.rol = rol;
-        this.fechaRegistro = fechaRegistro;
-        this.ultimoAcceso = ultimoAcceso;
-        this.activo = activo;
-    }
-
     public int getId() {
         return id;
     }
@@ -42,9 +27,7 @@ public class Usuario {
         this.id = id;
     }
 
-    public String getUsuario() {
-        return usuario;
-    }
+    public String getUsuario() {return usuario;}
 
     public void setUsuario(String usuario) {
         this.usuario = usuario;
@@ -112,10 +95,6 @@ public class Usuario {
 
     public void setActivo(boolean activo) {
         this.activo = activo;
-    }
-
-    public boolean hasPermission(String permission) {
-        return rol != null && rol.hasPermission(permission);
     }
 
     @Override
