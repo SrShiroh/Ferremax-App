@@ -1,3 +1,4 @@
+DROP DATABASE sistema_reparaciones_ac;
 CREATE DATABASE IF NOT EXISTS sistema_reparaciones_ac;
 USE sistema_reparaciones_ac;
 
@@ -45,17 +46,6 @@ CREATE TABLE Solicitudes (
     FOREIGN KEY (id_tecnico) REFERENCES Usuarios(id)
 );
 
-CREATE TABLE Horarios (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    fecha DATE NOT NULL,
-    hora_inicio TIME NOT NULL,
-    hora_fin TIME NOT NULL,
-    disponible BOOLEAN DEFAULT TRUE,
-    id_solicitud INT,
-    FOREIGN KEY (id_solicitud) REFERENCES Solicitudes(id),
-    UNIQUE (fecha, hora_inicio, hora_fin) -- Evitar duplicados de horarios
-);
-
 CREATE TABLE Seguimiento_Reparaciones (
     id INT PRIMARY KEY AUTO_INCREMENT,
     id_solicitud INT NOT NULL,
@@ -90,12 +80,13 @@ INSERT INTO Estados_Solicitud (nombre, descripcion) VALUES
 ('Completada', 'Reparación finalizada con éxito'),
 ('Cancelada', 'Solicitud cancelada');
 
-
+-- Usuarios
 INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', 'Shiroasd', 1);
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroha' ,'Shiroh', 'srshiroh@ferremax.com', 'Shiroasd', 2);
 INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shirohe' ,'Shiroh', 'shiroh@gmail.com', 'Shiroasd', 3);
 
-
+-- Solicitudes (corregido id_usuario_registro y formato de fecha)
 INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
-VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '24-07-2025', '19:25:00', 1, 3);
+VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '2025-07-24', '19:25:00', 1, 2); -- Usando id_usuario_registro = 2 (usuario 'shirohe')
 INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
-VALUES ('Carlos Santos', 'Juan@example.com', '091411872', 'nose', '27-02-2026', '14:25:00', 1, 3);
+VALUES ('Carlos Santos', 'Juan@example.com', '091411872', 'nose', '2026-02-27', '14:25:00', 1, 2); -- Usando id_usuario_registro = 2 (usuario 'shirohe')
