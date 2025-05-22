@@ -31,9 +31,9 @@ Fecha y hora solicitada
 
 
 
-Gestión de Horarios:
+Gestión de Solicitudes:
 
-Visualización en formato calendario o lista
+Visualización en formato lista
 
 Alta, modificación y cancelación de citas
 
@@ -60,20 +60,12 @@ Uso de JavaFX o Swing para la GUI
 
 Persistencia de Datos:
 
-Uso de base de datos (SQLite, MySQL o H2)
+Uso de base de datos (MySQL)
 
 
 Seguridad:
 
-Encriptación de contraseñas
-
 Validación de entrada de datos
-
-
-Escalabilidad y Mantenibilidad:
-
-Diseño modular y arquitectura en capas
-
 
 
 2. Arquitectura y Diseño
@@ -102,7 +94,7 @@ Seguridad: Encriptación, control de sesiones y permisos
 
 3. Estructura del Proyecto
 
-com.reparacion
+com.ferremax
 ├── gui          → Interfaces gráficas (LoginFrame, AgendaPanel)
 ├── controller   → Lógica de interacción (LoginController, AgendaController)
 ├── model        → Entidades y lógica de negocio (Usuario, Solicitud, Horario)
@@ -113,7 +105,7 @@ com.reparacion
 
 3.1. Diagrama de Clases (Resumen)
 
-Usuario: id, nombre, correo, teléfono, contraseña (encriptada), rol
+Usuario: id, nombre, correo, teléfono, contraseña, rol
 
 Solicitud: id, nombreSolicitante, contacto, ubicación, fecha, hora, estado
 
@@ -122,17 +114,15 @@ Horario: id, fecha, horaInicio, horaFin, relación con Solicitud
 
 4. Tecnologías y Herramientas
 
-Lenguaje: Java (8 o superior)
+Lenguaje: Java (17 o superior)
 
 GUI: JavaFX o Swing
 
-Base de Datos: SQLite, MySQL
+Base de Datos: MySQL
 
 IDE: IntelliJ IDEA, o Visual Studio Code
 
 Control de versiones: Git
-
-Librerías: MYSQL
 
 
 5. Plan de Desarrollo
@@ -151,7 +141,7 @@ Instalación de herramientas y conexión con BD
 
 Fase 3: Módulo de Usuarios
 
-Registro, login, gestión de sesiones y encriptación
+Registro, login, gestión de sesiones
 
 
 Fase 4: Módulo de Solicitudes y Horarios
