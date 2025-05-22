@@ -4,6 +4,7 @@ import com.ferremax.controller.LoginController;
 import com.ferremax.dao.SolicitudDAO;
 import com.ferremax.dao.UsuarioDAO;
 import com.ferremax.model.EstadoSolicitud;
+import com.ferremax.model.RolUsuario;
 import com.ferremax.model.Solicitud;
 import com.ferremax.model.Usuario;
 
@@ -18,8 +19,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import java.util.*;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -241,9 +242,9 @@ public class EmployeeMainFrame extends JFrame {
     }
 
     private Object[][] getSolicitudesTableData() {
-        java.util.List<Object[]> rows = new ArrayList<>();
+        List<Object[]> rows = new ArrayList<>();
 
-        java.util.List<Solicitud> allSolicitudes = SolicitudDAO.getSolicitudes();
+        List<Solicitud> allSolicitudes = SolicitudDAO.getSolicitudes();
 
         for (Solicitud solicitud : allSolicitudes) {
             Object[] row = new Object[7];
@@ -444,12 +445,12 @@ public class EmployeeMainFrame extends JFrame {
                 addInfoRow(infoPanel, "Dirección:", solicitud.getDireccion());
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy");
-                String fechaSolicitud = dateFormat.format(solicitud.getFechaSolicitud());
-                String fechaProgramada = dateFormat.format(solicitud.getFechaProgramada());
+                String fechaSolicitud = solicitud.getFechaSolicitud() != null ? dateFormat.format(solicitud.getFechaSolicitud()) : "N/A";
+                String fechaProgramada = solicitud.getFechaProgramada() != null ? dateFormat.format(solicitud.getFechaProgramada()) : "N/A";
 
                 addInfoRow(infoPanel, "Fecha de Solicitud:", fechaSolicitud);
                 addInfoRow(infoPanel, "Fecha Programada:", fechaProgramada);
-                addInfoRow(infoPanel, "Hora Programada:", solicitud.getHoraProgramada());
+                addInfoRow(infoPanel, "Hora Programada:", solicitud.getHoraProgramada() != null ? solicitud.getHoraProgramada() : "N/A");
                 addInfoRow(infoPanel, "Estado:", solicitud.getEstado().getNombre());
 
                 String nombreTecnico = "Sin asignar";
@@ -463,9 +464,8 @@ public class EmployeeMainFrame extends JFrame {
 
                 JLabel lblNotas = new JLabel("Notas:", JLabel.LEFT);
                 lblNotas.setFont(new Font("Arial", Font.BOLD, 12));
-                addInfoRow(infoPanel, "Notas:", solicitud.getNotas());
 
-                JTextArea txtNotas = new JTextArea(solicitud.getNotas());
+                JTextArea txtNotas = new JTextArea(solicitud.getNotas() != null ? solicitud.getNotas() : "");
                 txtNotas.setEditable(false);
                 txtNotas.setLineWrap(true);
                 txtNotas.setWrapStyleWord(true);
@@ -474,41 +474,68 @@ public class EmployeeMainFrame extends JFrame {
                 JScrollPane scrollNotas = new JScrollPane(txtNotas);
                 scrollNotas.setPreferredSize(new Dimension(400, 100));
 
-                JPanel notasPanel = new JPanel(new BorderLayout(5, 5));
-                notasPanel.setBackground(Color.WHITE);
-                notasPanel.add(lblNotas, BorderLayout.NORTH);
-                notasPanel.add(scrollNotas, BorderLayout.CENTER);
+                JPanel notasOuterPanel = new JPanel(new BorderLayout(5,5));
+                notasOuterPanel.setBackground(Color.WHITE);
+                notasOuterPanel.add(lblNotas, BorderLayout.NORTH);
+                notasOuterPanel.add(scrollNotas, BorderLayout.CENTER);
 
-                detallePanel.add(infoPanel, BorderLayout.CENTER);
-                detallePanel.add(notasPanel, BorderLayout.SOUTH);
+
+                JPanel centerContentPanel = new JPanel(new BorderLayout(10,10));
+                centerContentPanel.setBackground(Color.WHITE);
+                centerContentPanel.add(infoPanel, BorderLayout.CENTER);
+                centerContentPanel.add(notasOuterPanel, BorderLayout.SOUTH);
+
+
+                detallePanel.add(centerContentPanel, BorderLayout.CENTER);
+
 
                 JDialog dialog = new JDialog();
                 dialog.setTitle("Detalles de Solicitud");
                 dialog.setModal(true);
-                dialog.setSize(600, 500);
+                dialog.setSize(600, 600);
                 dialog.setLocationRelativeTo(null);
                 dialog.setContentPane(detallePanel);
 
-                JButton btnReclamar = new JButton("Reclamar");
-                btnReclamar.setBackground(new Color(52, 152, 219));
-                btnReclamar.setForeground(Color.BLACK);
-                btnReclamar.setFocusPainted(false);
-
-                btnReclamar.addActionListener(e -> {
-                    int confirmacion = JOptionPane.showConfirmDialog(null,
-                            "¿Está seguro de que desea reclamar esta solicitud?",
-                            "Confirmar Reclamo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-
-                    if (confirmacion == JOptionPane.YES_OPTION) {
-
-                        dialog.dispose();
-                    }
-                });
-
+                JButton actionButton;
                 JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 buttonPanel.setBackground(Color.WHITE);
-                buttonPanel.add(btnReclamar);
 
+                if (LoginController.getUsuarioLogueado().getRol() == RolUsuario.TECNICO) {
+                    if (solicitud.getEstado() == EstadoSolicitud.PENDIENTE) {
+                        actionButton = new JButton("Reclamar");
+                        actionButton.setBackground(new Color(52, 152, 219));
+                        actionButton.setForeground(Color.BLACK);
+                        actionButton.setFocusPainted(false);
+                        actionButton.addActionListener(e -> {
+                            int confirmacion = JOptionPane.showConfirmDialog(dialog,
+                                    "¿Está seguro de que desea reclamar esta solicitud?",
+                                    "Confirmar Reclamo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                            if (confirmacion == JOptionPane.YES_OPTION) {
+                                SolicitudDAO.asignarTecnico(solicitud.getId(), LoginController.getUsuarioLogueado().getId());
+                                solicitud.setEstado(EstadoSolicitud.ASIGNADA);
+                                SolicitudDAO.update(solicitud);
+                                JOptionPane.showMessageDialog(dialog, "Solicitud reclamada y asignada.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                actualizarTablaSolicitudes();
+                                actualizarEstadisticas(PANEL_SOLICITUDES);
+                                dialog.dispose();
+                            }
+                        });
+                    } else {
+                        actionButton = new JButton("Cerrar");
+                        actionButton.setBackground(new Color(108, 117, 125));
+                        actionButton.setForeground(Color.WHITE);
+                        actionButton.setFocusPainted(false);
+                        actionButton.addActionListener(e -> dialog.dispose());
+                    }
+                } else { // Empleado u otro rol
+                    actionButton = new JButton("Cerrar");
+                    actionButton.setBackground(new Color(108, 117, 125));
+                    actionButton.setForeground(Color.WHITE);
+                    actionButton.setFocusPainted(false);
+                    actionButton.addActionListener(e -> dialog.dispose());
+                }
+
+                buttonPanel.add(actionButton);
                 detallePanel.add(buttonPanel, BorderLayout.SOUTH);
 
                 dialog.setVisible(true);
@@ -521,7 +548,7 @@ public class EmployeeMainFrame extends JFrame {
             JOptionPane.showMessageDialog(null,
                     "Error al cargar los detalles de la solicitud: " + e.getMessage(),
                     "Error", JOptionPane.ERROR_MESSAGE);
-            Logger.getLogger(AdminMainFrame.class.getName()).log(Level.SEVERE, "Error occurred", e);
+            Logger.getLogger(EmployeeMainFrame.class.getName()).log(Level.SEVERE, "Error occurred", e);
         }
     }
 
@@ -633,7 +660,7 @@ public class EmployeeMainFrame extends JFrame {
         JComboBox<EstadoSolicitud> cmbEstado = new JComboBox<>(estados);
         cmbEstado.setSelectedItem(solicitud.getEstado());
 
-        java.util.List<Usuario> tecnicos = UsuarioDAO.getTecnicos();
+        List<Usuario> tecnicos = UsuarioDAO.getTecnicos();
         String[] tecnicosNombres = new String[tecnicos.size() + 1];
         tecnicosNombres[0] = "Sin asignar";
         for (int i = 0; i < tecnicos.size(); i++) {
@@ -835,7 +862,7 @@ public class EmployeeMainFrame extends JFrame {
         JComboBox<EstadoSolicitud> cmbEstado = new JComboBox<>(estados);
         cmbEstado.setSelectedItem(EstadoSolicitud.PENDIENTE);
 
-        java.util.List<Usuario> tecnicos = UsuarioDAO.getTecnicos();
+        List<Usuario> tecnicos = UsuarioDAO.getTecnicos();
         String[] tecnicosNombres = new String[tecnicos.size() + 1];
         tecnicosNombres[0] = "Sin asignar";
         for (int i = 0; i < tecnicos.size(); i++) {
@@ -1044,7 +1071,7 @@ public class EmployeeMainFrame extends JFrame {
         headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        java.util.List<String> clientesNombres = obtenerClientesUnicos();
+        List<String> clientesNombres = obtenerClientesUnicos();
 
         JPanel clientesContainer = new JPanel();
         clientesContainer.setLayout(new BorderLayout());
@@ -1090,11 +1117,11 @@ public class EmployeeMainFrame extends JFrame {
         return panel;
     }
 
-    private java.util.List<String> obtenerClientesUnicos() {
-        java.util.List<String> clientesUnicos = new ArrayList<>();
-        java.util.List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
+    private List<String> obtenerClientesUnicos() {
+        List<String> clientesUnicos = new ArrayList<>();
+        List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
 
-        java.util.Set<String> nombresUnicos = new java.util.HashSet<>();
+        Set<String> nombresUnicos = new HashSet<>();
 
         for (Solicitud solicitud : solicitudes) {
             String nombreCliente = solicitud.getNombreSolicitante();
@@ -1104,7 +1131,7 @@ public class EmployeeMainFrame extends JFrame {
         }
 
         clientesUnicos.addAll(nombresUnicos);
-        java.util.Collections.sort(clientesUnicos);
+        Collections.sort(clientesUnicos);
 
         return clientesUnicos;
     }
@@ -1151,7 +1178,7 @@ public class EmployeeMainFrame extends JFrame {
 
 
     private void verHistorialCliente(String nombreCliente) {
-        java.util.List<Solicitud> solicitudesCliente = obtenerSolicitudesPorCliente(nombreCliente);
+        List<Solicitud> solicitudesCliente = obtenerSolicitudesPorCliente(nombreCliente);
 
         JDialog dialog = new JDialog(this, "Historial de " + nombreCliente, true);
         dialog.setSize(800, 500);
@@ -1266,9 +1293,9 @@ public class EmployeeMainFrame extends JFrame {
         dialog.setVisible(true);
     }
 
-    private java.util.List<Solicitud> obtenerSolicitudesPorCliente(String nombreCliente) {
-        java.util.List<Solicitud> solicitudesCliente = new ArrayList<>();
-        java.util.List<Solicitud> todasSolicitudes = SolicitudDAO.getSolicitudes();
+    private List<Solicitud> obtenerSolicitudesPorCliente(String nombreCliente) {
+        List<Solicitud> solicitudesCliente = new ArrayList<>();
+        List<Solicitud> todasSolicitudes = SolicitudDAO.getSolicitudes();
 
         for (Solicitud solicitud : todasSolicitudes) {
             if (nombreCliente.equals(solicitud.getNombreSolicitante())) {
@@ -1287,7 +1314,7 @@ public class EmployeeMainFrame extends JFrame {
 
     private int contarSolicitudesPorCliente(String nombreCliente) {
         int contador = 0;
-        java.util.List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
+        List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
 
         for (Solicitud solicitud : solicitudes) {
             if (nombreCliente.equals(solicitud.getNombreSolicitante())) {

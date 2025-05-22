@@ -29,7 +29,5 @@ public class ExceptionHandler {
         });
     }
 
-    public static void logException(Exception ex, String message) {
-        logger.log(Level.SEVERE, message, ex);
-    }
+    public static void logException(Exception ex, String message) {logger.log(Level.SEVERE, message, ex);}
 }

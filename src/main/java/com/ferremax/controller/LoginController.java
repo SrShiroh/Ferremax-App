@@ -11,7 +11,7 @@ import com.ferremax.util.ExceptionHandler;
 import javax.swing.JFrame;
 
 public class LoginController {
-    private UsuarioDAO usuarioDAO;
+    private final UsuarioDAO usuarioDAO;
 
     public LoginController() {
         usuarioDAO = new UsuarioDAO();

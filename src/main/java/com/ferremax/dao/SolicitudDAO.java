@@ -15,8 +15,6 @@ import java.util.Date;
 import java.util.List;
 
 public class SolicitudDAO {
-    //Asignar tecnico a la solicitud con el tecnico que se encuentra en sesion
-
     public static int getEmpleadosA(){
         int empleadosA = 0;
 
@@ -339,4 +337,21 @@ public class SolicitudDAO {
         return solicitud;
     }
 
+    public static void asignarTecnico(int idSolicitud, int idTecnico) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("UPDATE Solicitudes SET id_tecnico = ? WHERE id = ?");
+            stmt.setInt(1, idTecnico);
+            stmt.setInt(2, idSolicitud);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al asignar técnico a la solicitud: " + idSolicitud);
+        } finally {
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+    }
 }
