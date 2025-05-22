@@ -67,6 +67,31 @@ public class UsuarioDAO {
         return null;
     }
 
+    public static boolean isEmailRegistered(String correoParaActualizar) {
+        Connection conn = null;
+        PreparedStatement stmt = null;
+        ResultSet rs = null;
+
+        try {
+            conn = DatabaseConnection.getConnection();
+            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Usuarios WHERE correo = ?");
+            stmt.setString(1, correoParaActualizar);
+            rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al verificar correo registrado: " + correoParaActualizar);
+        } finally {
+            DatabaseConnection.closeResultSet(rs);
+            DatabaseConnection.closeStatement(stmt);
+            DatabaseConnection.closeConnection(conn);
+        }
+
+        return false;
+    }
+
     public Usuario findByUsername(String username) {
         Connection conn = null;
         PreparedStatement stmt = null;
@@ -192,7 +217,7 @@ public class UsuarioDAO {
         }
     }
 
-    public boolean updateCredentials(Usuario usuario) {
+    public static boolean updateCredentials(Usuario usuario) {
         Connection conn = null;
         PreparedStatement stmt = null;
 

@@ -512,6 +512,7 @@ public class EmployeeMainFrame extends JFrame {
                                     "Confirmar Reclamo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
                             if (confirmacion == JOptionPane.YES_OPTION) {
                                 SolicitudDAO.asignarTecnico(solicitud.getId(), LoginController.getUsuarioLogueado().getId());
+                                solicitud.setIdTecnico(LoginController.getUsuarioLogueado().getId());
                                 solicitud.setEstado(EstadoSolicitud.ASIGNADA);
                                 SolicitudDAO.update(solicitud);
                                 JOptionPane.showMessageDialog(dialog, "Solicitud reclamada y asignada.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
@@ -527,7 +528,7 @@ public class EmployeeMainFrame extends JFrame {
                         actionButton.setFocusPainted(false);
                         actionButton.addActionListener(e -> dialog.dispose());
                     }
-                } else { // Empleado u otro rol
+                } else {
                     actionButton = new JButton("Cerrar");
                     actionButton.setBackground(new Color(108, 117, 125));
                     actionButton.setForeground(Color.WHITE);
@@ -1420,16 +1421,14 @@ public class EmployeeMainFrame extends JFrame {
         gbc.gridy = 1;
         contentPanel.add(new JLabel("Correo Electrónico Actual:"), gbc);
         gbc.gridx = 1;
-        JLabel lblCorreoActual;
-        if (LoginController.getUsuarioLogueado().getCorreo() == null) {
-            lblCorreoActual = new JLabel("Sin asignar");
+        final JLabel lblCorreoActualField = new JLabel();
+        lblCorreoActualField.setFont(new Font("Arial", Font.ITALIC, 14));
+        if (LoginController.getUsuarioLogueado().getCorreo() == null || LoginController.getUsuarioLogueado().getCorreo().isEmpty()) {
+            lblCorreoActualField.setText("Sin asignar");
         } else {
-            lblCorreoActual = new JLabel(LoginController.getUsuarioLogueado().getCorreo());
+            lblCorreoActualField.setText(LoginController.getUsuarioLogueado().getCorreo());
         }
-
-
-        lblCorreoActual.setFont(new Font("Arial", Font.ITALIC, 14));
-        contentPanel.add(lblCorreoActual, gbc);
+        contentPanel.add(lblCorreoActualField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
@@ -1446,15 +1445,14 @@ public class EmployeeMainFrame extends JFrame {
         gbc.gridy = 3;
         contentPanel.add(new JLabel("Teléfono Actual:"), gbc);
         gbc.gridx = 1;
-        JLabel lblTelefonoActual = null;
-        if (LoginController.getUsuarioLogueado().getTelefono() != null) {
-            lblTelefonoActual = new JLabel(LoginController.getUsuarioLogueado().getTelefono());
+        final JLabel lblTelefonoActualField = new JLabel();
+        lblTelefonoActualField.setFont(new Font("Arial", Font.ITALIC, 14));
+        if (LoginController.getUsuarioLogueado().getTelefono() == null || LoginController.getUsuarioLogueado().getTelefono().isEmpty()) {
+            lblTelefonoActualField.setText("Sin asignar");
         } else {
-            lblTelefonoActual = new JLabel("Sin asignar");
+            lblTelefonoActualField.setText(LoginController.getUsuarioLogueado().getTelefono());
         }
-
-        lblTelefonoActual.setFont(new Font("Arial", Font.ITALIC, 14));
-        contentPanel.add(lblTelefonoActual, gbc);
+        contentPanel.add(lblTelefonoActualField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
@@ -1514,14 +1512,14 @@ public class EmployeeMainFrame extends JFrame {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
         JButton btnActualizar = new JButton("Actualizar Información");
-        btnActualizar.setBackground(new Color(0, 255, 0));
+        btnActualizar.setBackground(new Color(0, 123, 255));
         btnActualizar.setForeground(Color.WHITE);
         btnActualizar.setFocusPainted(false);
         btnActualizar.setFont(new Font("Arial", Font.BOLD, 14));
-        btnActualizar.setPreferredSize(new Dimension(200, 40));
+        btnActualizar.setPreferredSize(new Dimension(220, 40));
 
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setBackground(new Color(255, 0, 0));
+        btnCancelar.setBackground(new Color(108, 117, 125));
         btnCancelar.setForeground(Color.WHITE);
         btnCancelar.setFocusPainted(false);
         btnCancelar.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -1535,7 +1533,7 @@ public class EmployeeMainFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 10;
         gbc.gridwidth = 2;
-        JLabel lblInfo = new JLabel("(*) Campo obligatorio para confirmar cambios");
+        JLabel lblInfo = new JLabel("(*) Contraseña actual es obligatoria para cambiar contraseña o para confirmar otros cambios.");
         lblInfo.setForeground(new Color(108, 117, 125));
         lblInfo.setFont(new Font("Arial", Font.ITALIC, 12));
         lblInfo.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
@@ -1547,8 +1545,177 @@ public class EmployeeMainFrame extends JFrame {
 
         panel.add(centerPanel, BorderLayout.CENTER);
 
+        btnActualizar.addActionListener(e -> {
+            String nuevoCorreoInput = txtNuevoCorreo.getText().trim();
+            String nuevoTelefonoInput = txtNuevoTelefono.getText().trim();
+            String passActualInput = new String(pwdActual.getPassword());
+            String passNuevaInput = new String(pwdNueva.getPassword());
+            String passConfirmarInput = new String(pwdConfirmar.getPassword());
+
+            Usuario usuarioLogueado = LoginController.getUsuarioLogueado();
+
+            String correoParaActualizar = usuarioLogueado.getCorreo() != null ? usuarioLogueado.getCorreo() : "";
+            String telefonoParaActualizar = usuarioLogueado.getTelefono() != null ? usuarioLogueado.getTelefono() : "";
+            String nuevaContrasenaParaActualizar = null;
+
+            boolean cambiosSolicitados = false;
+            boolean intencionCambioCorreo = !nuevoCorreoInput.isEmpty();
+            boolean intencionCambioTelefono = !nuevoTelefonoInput.isEmpty();
+            boolean intencionCambioPassword = !passNuevaInput.isEmpty();
+
+            if (intencionCambioCorreo) {
+                if (!nuevoCorreoInput.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+                    JOptionPane.showMessageDialog(panel, "El formato del nuevo correo electrónico no es válido.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!nuevoCorreoInput.equals(usuarioLogueado.getCorreo())) {
+                    correoParaActualizar = nuevoCorreoInput;
+                    cambiosSolicitados = true;
+                }
+            }
+
+            if (intencionCambioTelefono) {
+                String telefonoVerificado = verificarTelefono(nuevoTelefonoInput);
+                if (telefonoVerificado.isEmpty() && !nuevoTelefonoInput.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "El formato del teléfono no es válido. Use solo números (7-15 dígitos) con o sin prefijo +", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!telefonoVerificado.equals(usuarioLogueado.getTelefono())) {
+                    telefonoParaActualizar = telefonoVerificado;
+                    cambiosSolicitados = true;
+                }
+            }
+
+            if (intencionCambioPassword) {
+                if (passActualInput.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Debe ingresar su contraseña actual para cambiarla.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!Objects.equals(passActualInput, usuarioLogueado.getContrasena())) {
+                    JOptionPane.showMessageDialog(panel, "La contraseña actual ingresada es incorrecta.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!passNuevaInput.equals(passConfirmarInput)) {
+                    JOptionPane.showMessageDialog(panel, "La nueva contraseña y su confirmación no coinciden.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (passNuevaInput.length() < 6) {
+                    JOptionPane.showMessageDialog(panel, "La nueva contraseña debe tener al menos 6 caracteres.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                nuevaContrasenaParaActualizar = passNuevaInput;
+                cambiosSolicitados = true;
+            } else {
+                if (!passActualInput.isEmpty() && !passConfirmarInput.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Si desea cambiar la contraseña, ingrese también la nueva contraseña.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+            }
+
+            if (!cambiosSolicitados) {
+                JOptionPane.showMessageDialog(panel, "No se ingresaron nuevos datos para actualizar o los datos son iguales a los actuales.", "Información", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            boolean necesitaConfirmacionPassActual = (intencionCambioCorreo && !correoParaActualizar.equals(usuarioLogueado.getCorreo())) ||
+                    (intencionCambioTelefono && !telefonoParaActualizar.equals(usuarioLogueado.getTelefono()));
+
+            if (necesitaConfirmacionPassActual && !intencionCambioPassword) {
+                if (passActualInput.isEmpty()) {
+                    JOptionPane.showMessageDialog(panel, "Debe ingresar su contraseña actual para confirmar los cambios de correo/teléfono.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (!Objects.equals(passActualInput, usuarioLogueado.getContrasena())) {
+                    JOptionPane.showMessageDialog(panel, "La contraseña actual es incorrecta para confirmar los cambios.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            }
+
+            boolean exitoActualizacionCredenciales = true;
+            boolean exitoActualizacionPassword = true;
+
+            boolean credencialesModificadas = intencionCambioCorreo && !correoParaActualizar.equals(usuarioLogueado.getCorreo() == null ? "" : usuarioLogueado.getCorreo()) ||
+                    intencionCambioTelefono && !telefonoParaActualizar.equals(usuarioLogueado.getTelefono() == null ? "" : usuarioLogueado.getTelefono());
+
+            if (credencialesModificadas) {
+                Usuario usuarioConNuevasCredenciales = new Usuario();
+                usuarioConNuevasCredenciales.setId(usuarioLogueado.getId());
+                usuarioConNuevasCredenciales.setCorreo(correoParaActualizar);
+                usuarioConNuevasCredenciales.setTelefono(telefonoParaActualizar);
+                if (!UsuarioDAO.updateCredentials(usuarioConNuevasCredenciales)) {
+                    exitoActualizacionCredenciales = false;
+                }
+            }
+
+            if (intencionCambioPassword && nuevaContrasenaParaActualizar != null) {
+                if (!new UsuarioDAO().updatePassword(usuarioLogueado.getId(), nuevaContrasenaParaActualizar)) {
+                    exitoActualizacionPassword = false;
+                }
+            }
+
+            if (exitoActualizacionCredenciales && exitoActualizacionPassword) {
+                JOptionPane.showMessageDialog(panel, "Información actualizada correctamente.", "Actualización Exitosa", JOptionPane.INFORMATION_MESSAGE);
+
+                if (credencialesModificadas && exitoActualizacionCredenciales) {
+                    if (intencionCambioCorreo && !correoParaActualizar.equals(usuarioLogueado.getCorreo() == null ? "" : usuarioLogueado.getCorreo())) {
+                        if (UsuarioDAO.isEmailRegistered(correoParaActualizar)) {
+                            JOptionPane.showMessageDialog(panel, "El correo electrónico ya está registrado para otro usuario.", "Error de Registro", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            LoginController.getUsuarioLogueado().setCorreo(correoParaActualizar);
+                            lblCorreoActualField.setText(correoParaActualizar.isEmpty() ? "Sin asignar" : correoParaActualizar);
+                        }
+                    }
+                    if (intencionCambioTelefono && !telefonoParaActualizar.equals(usuarioLogueado.getTelefono() == null ? "" : usuarioLogueado.getTelefono())) {
+                        LoginController.getUsuarioLogueado().setTelefono(telefonoParaActualizar);
+                        lblTelefonoActualField.setText(telefonoParaActualizar.isEmpty() ? "Sin asignar" : telefonoParaActualizar);
+                    }
+                }
+                if (intencionCambioPassword && nuevaContrasenaParaActualizar != null && exitoActualizacionPassword) {
+                    LoginController.getUsuarioLogueado().setContrasena(nuevaContrasenaParaActualizar);
+                }
+
+                txtNuevoCorreo.setText("");
+                txtNuevoTelefono.setText("");
+                pwdActual.setText("");
+                pwdNueva.setText("");
+                pwdConfirmar.setText("");
+            } else {
+                StringBuilder errorMsg = new StringBuilder("No se pudo actualizar la información completamente:\n");
+                if (credencialesModificadas && !exitoActualizacionCredenciales) {
+                    errorMsg.append("- Error al actualizar correo y/o teléfono.\n");
+                }
+                if (intencionCambioPassword && !exitoActualizacionPassword) {
+                    errorMsg.append("- Error al actualizar la contraseña.\n");
+                }
+                JOptionPane.showMessageDialog(panel, errorMsg.toString(), "Error de Actualización", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnCancelar.addActionListener(e -> {
+            txtNuevoCorreo.setText("");
+            txtNuevoTelefono.setText("");
+            pwdActual.setText("");
+            pwdNueva.setText("");
+            pwdConfirmar.setText("");
+        });
+
         return panel;
     }
+
+    private String verificarTelefono(String telefono) {
+        if (telefono == null) {
+            return "";
+        }
+        String telefonoLimpio = telefono.trim();
+
+        if (telefonoLimpio.isEmpty()) {
+            return "";
+        }
+        String regex = "^\\+?\\d{7,15}$";
+        return telefonoLimpio.matches(regex) ? telefonoLimpio : "";
+    }
+
+
 
     private void actualizarTablaSolicitudes() {
         int index = getComponentIndex(contentPanel, PANEL_SOLICITUDES);
@@ -1571,8 +1738,8 @@ public class EmployeeMainFrame extends JFrame {
                             table.getColumnModel().getColumn(6).setCellEditor(accionesEditor);
                         }
 
-                        table.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-                        table.getColumnModel().getColumn(6).setPreferredWidth(250); // Acciones
+                        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+                        table.getColumnModel().getColumn(6).setPreferredWidth(250);
 
                         table.revalidate();
                         table.repaint();
