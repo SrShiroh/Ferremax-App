@@ -33,9 +33,11 @@ public class AdminMainFrame extends JFrame {
     private static final String PANEL_USUARIOS = "USUARIOS";
     private static final String PANEL_CLIENTES = "CLIENTES";
 
+    private final Color accentColor = new Color(0, 123, 255);
+
     public AdminMainFrame() {
         super("Sistema de Gestión de Reparaciones - Panel de Administrador");
-        setSize(1280, 720);
+        setSize(1920, 1080);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -86,6 +88,7 @@ public class AdminMainFrame extends JFrame {
         panel.add(new JSeparator());
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
+        // Cambiado el estilo de los botones del menú para que coincidan con la imagen
         addMenuItem(panel, "Dashboard", PANEL_INICIO, "Inicio");
         addMenuItem(panel, "Gestión de Solicitudes", PANEL_SOLICITUDES, "Solicitudes");
         addMenuItem(panel, "Gestión de Usuarios", PANEL_USUARIOS, "Usuarios");
@@ -137,11 +140,16 @@ public class AdminMainFrame extends JFrame {
     private void addMenuItem(JPanel panel, String title, String panelName, String iconName) {
         JPanel menuItem = new JPanel(new BorderLayout());
         menuItem.setBackground(new Color(33, 33, 33));
-        menuItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-        menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        menuItem.setBorder(BorderFactory.createCompoundBorder(
+                // Agregado un borde visible para los botones del menú
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Arial", Font.PLAIN, 14));
+        // Aumentado el tamaño de la fuente
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
         lblTitle.setForeground(Color.WHITE);
         menuItem.add(lblTitle, BorderLayout.CENTER);
 
@@ -155,11 +163,21 @@ public class AdminMainFrame extends JFrame {
             @Override
             public void mouseEntered(MouseEvent e) {
                 menuItem.setBackground(new Color(66, 66, 66));
+                // Agregar un borde al pasar el mouse
+                menuItem.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 3, 0, 0, accentColor),
+                        BorderFactory.createEmptyBorder(15, 12, 15, 15)
+                ));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
                 menuItem.setBackground(new Color(33, 33, 33));
+                // Restaurar el borde original
+                menuItem.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
+                        BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                ));
             }
         });
 
@@ -316,9 +334,9 @@ public class AdminMainFrame extends JFrame {
         lblWelcome.setFont(new Font("Arial", Font.BOLD, 24));
         panel.add(lblWelcome, BorderLayout.NORTH);
 
-        JPanel dashboardPanel = new JPanel(new GridLayout(2, 2, 20, 20));
+        JPanel dashboardPanel = new JPanel(new GridLayout(2, 2, 30, 30));
         dashboardPanel.setOpaque(false);
-        dashboardPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        dashboardPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
 
         dashboardPanel.add(createStatCard("Empleados Activos", String.valueOf(SolicitudDAO.getEmpleadosA()), new Color(231, 76, 60)));
         dashboardPanel.add(createStatCard("Solicitudes Pendientes", String.valueOf(SolicitudDAO.getSolicitudesP()), new Color(52, 152, 219)));
@@ -333,22 +351,31 @@ public class AdminMainFrame extends JFrame {
     private JPanel createStatCard(String title, String value, Color accentColor) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+        // Agregado un borde más visible
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 2, true),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+
+        // Aumentado el tamaño del panel para hacerlo más cuadrado
+        panel.setPreferredSize(new Dimension(250, 200));
 
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(accentColor);
-        headerPanel.setPreferredSize(new Dimension(panel.getWidth(), 5));
+        headerPanel.setPreferredSize(new Dimension(panel.getWidth(), 10));
         panel.add(headerPanel, BorderLayout.NORTH);
 
         JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Arial", Font.BOLD, 36));
+        // Aumentado el tamaño de la fuente
+        lblValue.setFont(new Font("Arial", Font.BOLD, 48));
         lblValue.setHorizontalAlignment(JLabel.CENTER);
         panel.add(lblValue, BorderLayout.CENTER);
 
         JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Arial", Font.PLAIN, 14));
+        // Aumentado el tamaño de la fuente del título
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 18));
         lblTitle.setHorizontalAlignment(JLabel.CENTER);
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
         panel.add(lblTitle, BorderLayout.SOUTH);
 
         return panel;

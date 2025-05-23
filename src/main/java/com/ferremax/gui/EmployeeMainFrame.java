@@ -29,6 +29,8 @@ public class EmployeeMainFrame extends JFrame {
     private JPanel contentPanel;
     private CardLayout cardLayout;
 
+    private final Color accentColor = new Color(0, 123, 255);
+
     private static final String PANEL_INICIO = "INICIO";
     private static final String PANEL_SOLICITUDES = "SOLICITUDES";
     private static final String PANEL_CLIENTES = "CLIENTES";
@@ -36,7 +38,7 @@ public class EmployeeMainFrame extends JFrame {
 
     public EmployeeMainFrame() {
         super("Sistema de Gestión de Reparaciones - Panel de Empleado");
-        setSize(1280, 720);
+        setSize(1920, 1080);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         initComponents();
@@ -78,7 +80,7 @@ public class EmployeeMainFrame extends JFrame {
         panel.setBackground(new Color(0, 123, 255));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
-        JLabel lblLogo = new JLabel("FERREMAX");
+        JLabel lblLogo = new JLabel("Panel del Empleado");
         lblLogo.setFont(new Font("Arial", Font.BOLD, 20));
         lblLogo.setForeground(Color.WHITE);
         panel.add(lblLogo, BorderLayout.WEST);
@@ -86,14 +88,44 @@ public class EmployeeMainFrame extends JFrame {
         JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         userPanel.setOpaque(false);
 
-        JButton btnLogout = new JButton("Cerrar Sesión");
-        btnLogout.setBackground(new Color(220, 53, 69));
-        btnLogout.setForeground(Color.WHITE);
-        btnLogout.setFocusPainted(false);
-        btnLogout.setBorderPainted(false);
-        userPanel.add(btnLogout);
+        return panel;
+    }
 
-        panel.add(userPanel, BorderLayout.EAST);
+    private JPanel createSidePanel() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(new Color(33, 33, 33));
+        panel.setPreferredSize(new Dimension(220, getHeight()));
+
+        JLabel lblCompany = new JLabel("FERREMAX");
+        lblCompany.setFont(new Font("Arial", Font.BOLD, 20));
+        lblCompany.setForeground(Color.WHITE);
+        lblCompany.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblCompany.setBorder(BorderFactory.createEmptyBorder(25, 10, 25, 10));
+        panel.add(lblCompany);
+
+        panel.add(new JSeparator());
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+
+        addMenuItem(panel, "Dashboard", PANEL_INICIO, "home");
+        addMenuItem(panel, "Gestión de Solicitudes", PANEL_SOLICITUDES, "file-text");
+        addMenuItem(panel, "Gestión de Clientes", PANEL_CLIENTES, "calendar");
+        addMenuItem(panel, "Mis Credenciales", PANEL_CREDENCIALES, "user");
+
+        panel.add(Box.createVerticalGlue());
+
+        JButton btnLogout = new JButton("Cerrar Sesión");
+        btnLogout.setForeground(Color.BLACK);
+        btnLogout.setBackground(new Color(192, 57, 43));
+        btnLogout.setBorderPainted(false);
+        btnLogout.setFocusPainted(false);
+        btnLogout.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnLogout.setAlignmentX(Component.CENTER_ALIGNMENT);
+        btnLogout.setMaximumSize(new Dimension(200, 40));
+        btnLogout.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+        panel.add(btnLogout);
+        panel.add(Box.createRigidArea(new Dimension(0, 20)));
+
         btnLogout.addActionListener(e -> {
             Object originalMessageForeground = UIManager.get("OptionPane.messageForeground");
             Object originalButtonForeground = UIManager.get("Button.foreground");
@@ -119,36 +151,24 @@ public class EmployeeMainFrame extends JFrame {
                 UIManager.put("Button.foreground", originalButtonForeground);
             }
         });
-        return panel;
-    }
-
-    private JPanel createSidePanel() {
-        JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        panel.setBackground(new Color(52, 58, 64));
-        panel.setPreferredSize(new Dimension(220, getHeight()));
-
-        panel.add(Box.createRigidArea(new Dimension(0, 20)));
-
-        addMenuItem(panel, "Inicio", PANEL_INICIO, "home");
-        addMenuItem(panel, "Gestión de Solicitudes", PANEL_SOLICITUDES, "file-text");
-        addMenuItem(panel, "Gestión de Clientes", PANEL_CLIENTES, "calendar");
-        addMenuItem(panel, "Mis Credenciales", PANEL_CREDENCIALES, "user");
-
-        panel.add(Box.createVerticalGlue());
 
         return panel;
     }
 
     private void addMenuItem(JPanel panel, String title, String panelName, String icon) {
         JPanel menuItem = new JPanel(new BorderLayout());
-        menuItem.setBackground(new Color(52, 58, 64));
-        menuItem.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-        menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 50));
+        menuItem.setBackground(new Color(33, 33, 33));
+        menuItem.setBorder(BorderFactory.createCompoundBorder(
+                // Agregado un borde visible para los botones del menú
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        ));
+        menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
         JLabel lblTitle = new JLabel(title);
+        // Aumentado el tamaño de la fuente
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
         lblTitle.setForeground(Color.WHITE);
-        lblTitle.setFont(new Font("Arial", Font.PLAIN, 14));
         menuItem.add(lblTitle, BorderLayout.CENTER);
 
         menuItem.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -157,13 +177,25 @@ public class EmployeeMainFrame extends JFrame {
             public void mouseClicked(MouseEvent e) {
                 cardLayout.show(contentPanel, panelName);
             }
+
             @Override
             public void mouseEntered(MouseEvent e) {
-                menuItem.setBackground(new Color(73, 80, 87));
+                menuItem.setBackground(new Color(66, 66, 66));
+                // Agregar un borde al pasar el mouse
+                menuItem.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 3, 0, 0, accentColor),
+                        BorderFactory.createEmptyBorder(15, 12, 15, 15)
+                ));
             }
+
             @Override
             public void mouseExited(MouseEvent e) {
-                menuItem.setBackground(new Color(52, 58, 64));
+                menuItem.setBackground(new Color(33, 33, 33));
+                // Restaurar el borde original
+                menuItem.setBorder(BorderFactory.createCompoundBorder(
+                        BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
+                        BorderFactory.createEmptyBorder(15, 15, 15, 15)
+                ));
             }
         });
 
@@ -204,8 +236,9 @@ public class EmployeeMainFrame extends JFrame {
         welcomePanel.add(lblSubtitle, gbc);
 
         gbc.insets = new Insets(40, 0, 0, 0);
-        JPanel statsPanel = new JPanel(new GridLayout(1, 2, 20, 0));
+        JPanel statsPanel = new JPanel(new GridLayout(1, 2, 30, 0));
         statsPanel.setOpaque(false);
+        statsPanel.setMaximumSize(new Dimension(900, 120));
 
         statsPanel.add(createStatCard("Solicitudes Pendientes", String.valueOf(SolicitudDAO.getSolicitudesP()), new Color(0, 123, 255)));
         statsPanel.add(createStatCard("Reparaciones Realizadas", String.valueOf(SolicitudDAO.getReparacionesR()), new Color(40, 167, 69)));
@@ -220,25 +253,50 @@ public class EmployeeMainFrame extends JFrame {
     private JPanel createStatCard(String title, String value, Color accentColor) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createLineBorder(new Color(222, 226, 230), 1));
+        // Borde visible pero con esquinas redondeadas
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)
+        ));
 
+        // Modificado para ser mucho más ancho que alto
+        panel.setPreferredSize(new Dimension(400, 100));
+
+        // Barra de color en la parte superior
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(accentColor);
         headerPanel.setPreferredSize(new Dimension(panel.getWidth(), 5));
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        JLabel lblTitle = new JLabel(title);
-        lblTitle.setFont(new Font("Arial", Font.PLAIN, 16));
-        lblTitle.setBorder(BorderFactory.createEmptyBorder(15, 15, 5, 15));
-        panel.add(lblTitle, BorderLayout.SOUTH);
-
+        // Valor centrado con fuente grande
         JLabel lblValue = new JLabel(value);
-        lblValue.setFont(new Font("Arial", Font.BOLD, 36));
+        lblValue.setFont(new Font("Arial", Font.BOLD, 32));
         lblValue.setHorizontalAlignment(JLabel.CENTER);
-        lblValue.setBorder(BorderFactory.createEmptyBorder(20, 15, 20, 15));
         panel.add(lblValue, BorderLayout.CENTER);
 
+        // Título en la parte inferior
+        JLabel lblTitle = new JLabel(title);
+        lblTitle.setFont(new Font("Arial", Font.BOLD, 14));
+        lblTitle.setHorizontalAlignment(JLabel.CENTER);
+        lblTitle.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        panel.add(lblTitle, BorderLayout.SOUTH);
+
         return panel;
+    }
+
+
+    private JButton createStyledButton(String text, Color backgroundColor) {
+        JButton button = new JButton(text);
+        button.setBackground(backgroundColor);
+        button.setForeground(Color.BLACK);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(8, 15, 8, 15)
+        ));
+        button.setFont(new Font("Arial", Font.BOLD, 14));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
     }
 
     private Object[][] getSolicitudesTableData() {
@@ -295,23 +353,9 @@ public class EmployeeMainFrame extends JFrame {
             buttonPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
             buttonPanel.setOpaque(false);
 
-            JButton btnVer = new JButton("Ver");
-            btnVer.setBackground(new Color(52, 152, 219));
-            btnVer.setForeground(Color.BLACK);
-            btnVer.setFocusPainted(false);
-            btnVer.setMargin(new Insets(2, 8, 2, 8));
-
-            JButton btnEditar = new JButton("Editar");
-            btnEditar.setBackground(new Color(243, 156, 18));
-            btnEditar.setForeground(Color.BLACK);
-            btnEditar.setFocusPainted(false);
-            btnEditar.setMargin(new Insets(2, 8, 2, 8));
-
-            JButton btnEliminar = new JButton("Eliminar");
-            btnEliminar.setBackground(new Color(142, 68, 173));
-            btnEliminar.setForeground(Color.BLACK);
-            btnEliminar.setFocusPainted(false);
-            btnEliminar.setMargin(new Insets(2, 8, 2, 8));
+            JButton btnVer = createStyledButton("Ver", new Color(52, 152, 219));
+            JButton btnEditar = createStyledButton("Editar", new Color(243, 156, 18));
+            JButton btnEliminar = createStyledButton("Eliminar", new Color(142, 68, 173));
 
             buttonPanel.add(btnVer);
             buttonPanel.add(btnEditar);
@@ -331,31 +375,19 @@ public class EmployeeMainFrame extends JFrame {
 
                 int solicitudId = Integer.parseInt(table.getValueAt(row, 0).toString());
 
-                JButton btnVer = new JButton("Ver");
-                btnVer.setBackground(new Color(52, 152, 219));
-                btnVer.setForeground(Color.BLACK);
-                btnVer.setFocusPainted(false);
-                btnVer.setMargin(new Insets(2, 8, 2, 8));
+                JButton btnVer = createStyledButton("Ver", new Color(52, 152, 219));
                 btnVer.addActionListener(e -> {
                     verSolicitud(solicitudId);
                     fireEditingStopped();
                 });
 
-                JButton btnEditar = new JButton("Editar");
-                btnEditar.setBackground(new Color(243, 156, 18));
-                btnEditar.setForeground(Color.BLACK);
-                btnEditar.setFocusPainted(false);
-                btnEditar.setMargin(new Insets(2, 8, 2, 8));
+                JButton btnEditar = createStyledButton("Editar", new Color(243, 156, 18));
                 btnEditar.addActionListener(e -> {
                     editarSolicitud(solicitudId);
                     fireEditingStopped();
                 });
 
-                JButton btnEliminar = new JButton("Eliminar");
-                btnEliminar.setBackground(new Color(142, 68, 173));
-                btnEliminar.setForeground(Color.BLACK);
-                btnEliminar.setFocusPainted(false);
-                btnEliminar.setMargin(new Insets(2, 8, 2, 8));
+                JButton btnEliminar = createStyledButton("Eliminar", new Color(142, 68, 173));
                 btnEliminar.addActionListener(e -> {
                     eliminarSolicitud(solicitudId);
                     fireEditingStopped();
@@ -385,13 +417,11 @@ public class EmployeeMainFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         actionsPanel.setOpaque(false);
 
-        JButton btnAgregar = new JButton("Nueva Solicitud");
-        btnAgregar.setBackground(new Color(46, 204, 113));
-        btnAgregar.setForeground(Color.BLACK);
-        btnAgregar.setFocusPainted(false);
+        JButton btnAgregar = createStyledButton("Nueva Solicitud", new Color(46, 204, 113));
+        btnAgregar.setPreferredSize(new Dimension(150, 40));
 
         actionsPanel.add(btnAgregar);
         panel.add(actionsPanel, BorderLayout.SOUTH);
@@ -502,10 +532,7 @@ public class EmployeeMainFrame extends JFrame {
 
                 if (LoginController.getUsuarioLogueado().getRol() == RolUsuario.TECNICO) {
                     if (solicitud.getEstado() == EstadoSolicitud.PENDIENTE) {
-                        actionButton = new JButton("Reclamar");
-                        actionButton.setBackground(new Color(52, 152, 219));
-                        actionButton.setForeground(Color.BLACK);
-                        actionButton.setFocusPainted(false);
+                        actionButton = createStyledButton("Reclamar", new Color(52, 152, 219));
                         actionButton.addActionListener(e -> {
                             int confirmacion = JOptionPane.showConfirmDialog(dialog,
                                     "¿Está seguro de que desea reclamar esta solicitud?",
@@ -522,17 +549,11 @@ public class EmployeeMainFrame extends JFrame {
                             }
                         });
                     } else {
-                        actionButton = new JButton("Cerrar");
-                        actionButton.setBackground(new Color(108, 117, 125));
-                        actionButton.setForeground(Color.WHITE);
-                        actionButton.setFocusPainted(false);
+                        actionButton = createStyledButton("Cerrar", new Color(108, 117, 125));
                         actionButton.addActionListener(e -> dialog.dispose());
                     }
                 } else {
-                    actionButton = new JButton("Cerrar");
-                    actionButton.setBackground(new Color(108, 117, 125));
-                    actionButton.setForeground(Color.WHITE);
-                    actionButton.setFocusPainted(false);
+                    actionButton = createStyledButton("Cerrar", new Color(108, 117, 125));
                     actionButton.addActionListener(e -> dialog.dispose());
                 }
 
