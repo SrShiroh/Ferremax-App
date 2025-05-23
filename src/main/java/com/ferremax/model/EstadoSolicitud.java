@@ -39,19 +39,6 @@ public enum EstadoSolicitud {
         return map.get(id);
     }
 
-    public boolean canTransitionTo(EstadoSolicitud newStatus) {
-        switch (this) {
-            case PENDIENTE:
-                return newStatus == ASIGNADA || newStatus == CANCELADA;
-            case ASIGNADA:
-                return newStatus == EN_PROCESO || newStatus == CANCELADA;
-            case EN_PROCESO:
-                return newStatus == COMPLETADA || newStatus == CANCELADA;
-            default:
-                return false;
-        }
-    }
-
     @Override
     public String toString() {
         return nombre;

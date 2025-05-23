@@ -1830,8 +1830,8 @@ public class AdminMainFrame extends JFrame {
                         JOptionPane.showMessageDialog(this,
                                 "Usuario " + estadoNuevo + " correctamente",
                                 "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
                         actualizarTablaUsuarios();
+                        actualizarEstadisticas(PANEL_USUARIOS);
                     } else {
                         JOptionPane.showMessageDialog(this,
                                 "Error al cambiar el estado del usuario",
@@ -1848,6 +1848,7 @@ public class AdminMainFrame extends JFrame {
             UIManager.put("Button.foreground", originalButtonForeground);
         }
     }
+
 
     private JPanel createClientesPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 20));

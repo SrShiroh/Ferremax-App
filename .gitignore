@@ -1,6 +1,7 @@
 # Ignore IDE project files
 .idea/
 *.iml
+*.xml
 
 # Ignore Maven target folder
 target/
@@ -16,5 +17,8 @@ target/
 *.war
 *.ear
 
-# Ignore sensitive properties files
-*.properties
+# Ignore build files
+*.build
+
+# Ignore temporary files
+*.tmp
