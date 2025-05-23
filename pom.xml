@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.ferremax</groupId>
-    <artifactId>ACReparacionesApp</artifactId>
+    <artifactId>Ferremax</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
 
@@ -20,9 +20,9 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
 
-        <mysql.connector.version>8.2.0</mysql.connector.version>
+        <mysql.connector.version>9.3.0</mysql.connector.version>
         <slf4j.version>2.0.7</slf4j.version>
-        <logback.version>1.4.12</logback.version>
+        <logback.version>1.5.13</logback.version>
         <junit.jupiter.version>5.9.3</junit.jupiter.version>
 
         <maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
@@ -33,7 +33,6 @@
         <main.class>com.ferremax.Main</main.class>
 
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.mysql</groupId>
@@ -41,20 +40,17 @@
             <version>${mysql.connector.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
-
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
             <scope>runtime</scope>
         </dependency>
-
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -67,8 +63,12 @@
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.mindrot</groupId>
+            <artifactId>jbcrypt</artifactId>
+            <version>0.4</version>
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -80,7 +80,6 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -119,8 +118,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
-
 </project>

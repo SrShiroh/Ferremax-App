@@ -15,146 +15,106 @@ import java.util.Date;
 import java.util.List;
 
 public class SolicitudDAO {
-    public static int getEmpleadosA(){
+    public static int getEmpleadosA() {
         int empleadosA = 0;
+        String sql = "SELECT COUNT(*) FROM Usuarios WHERE activo = 1";
 
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Usuarios WHERE activo = 1");
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 empleadosA = rs.getInt(1);
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al contar empleados activos");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
         return empleadosA;
     }
 
-    public static int getReparacionesReg(){
+    public static int getReparacionesReg() {
         int reparacionesReg = 0;
+        String sql = "SELECT COUNT(*) FROM Solicitudes";
 
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes");
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 reparacionesReg = rs.getInt(1);
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al contar el total de solicitudes");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
         return reparacionesReg;
     }
 
-    public static int getReparacionesR(){
+    public static int getReparacionesR() {
         int reparacionesR = 0;
+        String sql = "SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 4";
 
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 4");
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 reparacionesR = rs.getInt(1);
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al contar reparaciones realizadas");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
         return reparacionesR;
     }
 
-    public static int getSolicitudesP(){
+    public static int getSolicitudesP() {
         int solicitudesP = 0;
+        String sql = "SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 1";
 
-        Connection conn = null;
-        PreparedStatement stmt = null;
-
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("SELECT COUNT(*) FROM Solicitudes WHERE id_estado = 1");
-            ResultSet rs = stmt.executeQuery();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             if (rs.next()) {
                 solicitudesP = rs.getInt(1);
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al contar solicitudes pendientes");
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
         return solicitudesP;
     }
 
     public static Solicitud getById(int solicitudId) {
         Solicitud solicitud = null;
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String sql = "SELECT s.*, " +
+                "reg.nombre as nombre_registrador, " +
+                "tec.nombre as nombre_tecnico " +
+                "FROM Solicitudes s " +
+                "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
+                "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
+                "WHERE s.id = ?";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "SELECT s.*, " +
-                            "reg.nombre as nombre_registrador, " +
-                            "tec.nombre as nombre_tecnico " +
-                            "FROM Solicitudes s " +
-                            "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
-                            "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
-                            "WHERE s.id = ?"
-            );
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, solicitudId);
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                solicitud = mapResultSetToSolicitud(rs);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    solicitud = mapResultSetToSolicitud(rs);
+                }
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al obtener solicitud por ID: " + solicitudId);
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
-
         return solicitud;
     }
 
     public static int create(Solicitud solicitud) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet generatedKeys = null;
+        String sql = "INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, " +
+                "fecha_solicitud, fecha_programada, hora_programada, id_estado, notas, " +
+                "id_usuario_registro, id_tecnico) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, " +
-                            "fecha_solicitud, fecha_programada, hora_programada, id_estado, notas, " +
-                            "id_usuario_registro, id_tecnico) " +
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    PreparedStatement.RETURN_GENERATED_KEYS
-            );
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, solicitud.getNombreSolicitante());
             stmt.setString(2, solicitud.getCorreo());
@@ -185,34 +145,27 @@ public class SolicitudDAO {
                 throw new SQLException("La creación de la solicitud falló, no se insertaron filas.");
             }
 
-            generatedKeys = stmt.getGeneratedKeys();
-            if (generatedKeys.next()) {
-                return generatedKeys.getInt(1);
-            } else {
-                throw new SQLException("La creación de la solicitud falló, no se obtuvo el ID.");
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);
+                } else {
+                    throw new SQLException("La creación de la solicitud falló, no se obtuvo el ID.");
+                }
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al crear solicitud");
             return -1;
-        } finally {
-            DatabaseConnection.closeResultSet(generatedKeys);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
     }
 
     public static boolean update(Solicitud solicitud) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
+        String sql = "UPDATE Solicitudes SET nombre_solicitante = ?, correo = ?, " +
+                "telefono = ?, direccion = ?, fecha_programada = ?, " +
+                "hora_programada = ?, id_estado = ?, notas = ?, id_tecnico = ? " +
+                "WHERE id = ?";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement(
-                    "UPDATE Solicitudes SET nombre_solicitante = ?, correo = ?, " +
-                            "telefono = ?, direccion = ?, fecha_programada = ?, " +
-                            "hora_programada = ?, id_estado = ?, notas = ?, id_tecnico = ? " +
-                            "WHERE id = ?"
-            );
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, solicitud.getNombreSolicitante());
             stmt.setString(2, solicitud.getCorreo());
@@ -242,64 +195,43 @@ public class SolicitudDAO {
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al actualizar solicitud: " + solicitud.getId());
             return false;
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
     }
 
-
-
     public static boolean delete(int id) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
+        String sql = "DELETE FROM Solicitudes WHERE id = ?";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("DELETE FROM Solicitudes WHERE id = ?");
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             int affectedRows = stmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al eliminar solicitud: " + id);
             return false;
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
     }
 
     public static List<Solicitud> getSolicitudes() {
         List<Solicitud> solicitudes = new ArrayList<>();
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String sql = "SELECT s.*, " +
+                "reg.nombre as nombre_registrador, " +
+                "tec.nombre as nombre_tecnico " +
+                "FROM Solicitudes s " +
+                "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
+                "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
+                "ORDER BY s.id ASC";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            String sql =
-                    "SELECT s.*, " +
-                            "reg.nombre as nombre_registrador, " +
-                            "tec.nombre as nombre_tecnico " +
-                            "FROM Solicitudes s " +
-                            "LEFT JOIN Usuarios reg ON s.id_usuario_registro = reg.id " +
-                            "LEFT JOIN Usuarios tec ON s.id_tecnico = tec.id " +
-                            "ORDER BY s.id ASC";
-
-            stmt = conn.prepareStatement(sql);
-            rs = stmt.executeQuery();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 solicitudes.add(mapResultSetToSolicitud(rs));
             }
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al obtener todas las solicitudes");
-        } finally {
-            DatabaseConnection.closeResultSet(rs);
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
-
         return solicitudes;
     }
 
@@ -338,20 +270,15 @@ public class SolicitudDAO {
     }
 
     public static void asignarTecnico(int idSolicitud, int idTecnico) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
+        String sql = "UPDATE Solicitudes SET id_tecnico = ? WHERE id = ?";
 
-        try {
-            conn = DatabaseConnection.getConnection();
-            stmt = conn.prepareStatement("UPDATE Solicitudes SET id_tecnico = ? WHERE id = ?");
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idTecnico);
             stmt.setInt(2, idSolicitud);
             stmt.executeUpdate();
         } catch (SQLException e) {
             ExceptionHandler.logException(e, "Error al asignar técnico a la solicitud: " + idSolicitud);
-        } finally {
-            DatabaseConnection.closeStatement(stmt);
-            DatabaseConnection.closeConnection(conn);
         }
     }
 }

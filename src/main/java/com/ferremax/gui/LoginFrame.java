@@ -12,7 +12,7 @@ public class LoginFrame extends JFrame {
     private JPasswordField txtContrasena;
     private JButton btnIngresar;
     private JButton btnSalir;
-    private LoginController controller;
+    private final LoginController controller;
 
     public LoginFrame() {
         super("Sistema de Gestión de Reparaciones AC");
@@ -187,7 +187,7 @@ public class LoginFrame extends JFrame {
         panel.setBackground(new Color(245, 245, 245));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
 
-        JLabel lblCopyright = new JLabel("© 2025 Ferremax - Todos los derechos reservados");
+        JLabel lblCopyright = new JLabel("© 2025 Ferremax - Coded by Santiago & Facundo");
         lblCopyright.setFont(new Font("Arial", Font.PLAIN, 12));
         lblCopyright.setForeground(new Color(100, 100, 100));
         panel.add(lblCopyright, BorderLayout.WEST);

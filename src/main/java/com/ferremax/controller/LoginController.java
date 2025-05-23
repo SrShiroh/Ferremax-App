@@ -7,6 +7,7 @@ import com.ferremax.security.SessionManager;
 import com.ferremax.gui.AdminMainFrame;
 import com.ferremax.gui.EmployeeMainFrame;
 import com.ferremax.util.ExceptionHandler;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.swing.JFrame;
 
@@ -31,8 +32,7 @@ public class LoginController {
             return false;
         }
 
-        boolean validPassword = password.equals(user.getContrasena());
-        if (!validPassword) {
+        if (!BCrypt.checkpw(password, user.getContrasena())) {
             return false;
         }
 

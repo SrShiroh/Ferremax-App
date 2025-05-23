@@ -81,12 +81,11 @@ INSERT INTO Estados_Solicitud (nombre, descripcion) VALUES
 ('Cancelada', 'Solicitud cancelada');
 
 -- Usuarios
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', 'Shiroasd', 1);
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroha' ,'Shiroh', 'srshiroh@ferremax.com', 'Shiroasd', 2);
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shirohe' ,'Shiroh', 'shiroh@gmail.com', 'Shiroasd', 3);
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', '$2a$10$u8ugkNFw3R.uxC2Ps.87uec3sSsGiDnI8.09Ih/8rTpsn/Se0CNr.', 1);
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('facu' ,'Facundo', 'facundo@gmail.com', '$2a$10$9yU.Pa5VBxFhKt7q.tkBNecS0.OjQHDcsQyjKElnH6ysmBnn8Bq26', 1);
 
 -- Solicitudes (corregido id_usuario_registro y formato de fecha)
 INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
-VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '2025-07-24', '19:25:00', 1, 2); -- Usando id_usuario_registro = 2 (usuario 'shirohe')
+VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '2025-07-24', '19:25:00', 1, 1);
 INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
-VALUES ('Carlos Santos', 'Juan@example.com', '091411872', 'nose', '2026-02-27', '14:25:00', 1, 2); -- Usando id_usuario_registro = 2 (usuario 'shirohe')
+VALUES ('Carlos Santos', 'Juan@example.com', '091411872', 'nose', '2026-02-27', '14:25:00', 1, 1);

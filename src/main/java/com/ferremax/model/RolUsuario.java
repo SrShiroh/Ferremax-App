@@ -36,23 +36,6 @@ public enum RolUsuario {
         return map.get(id);
     }
 
-    public boolean hasPermission(String permission) {
-        switch (this) {
-            case ADMINISTRADOR:
-                return true;
-            case TECNICO:
-                return permission.startsWith("solicitud.view") ||
-                        permission.equals("solicitud.update.estado") ||
-                        permission.equals("horario.view");
-            case EMPLEADO:
-                return permission.startsWith("solicitud") ||
-                        permission.startsWith("horario") ||
-                        permission.equals("usuario.update.self");
-            default:
-                return false;
-        }
-    }
-
     @Override
     public String toString() {
         return nombre;

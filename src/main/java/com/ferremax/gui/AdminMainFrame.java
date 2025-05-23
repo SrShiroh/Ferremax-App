@@ -300,7 +300,7 @@ public class AdminMainFrame extends JFrame {
         panel.setBackground(new Color(245, 245, 245));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
 
-        JLabel lblStatus = new JLabel("© 2025 Ferremax - Todos los derechos reservados");
+        JLabel lblStatus = new JLabel("© 2025 Ferremax - Coded by Santiago & Facundo");
         lblStatus.setFont(new Font("Arial", Font.PLAIN, 12));
         panel.add(lblStatus, BorderLayout.WEST);
 

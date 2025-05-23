@@ -158,29 +158,8 @@ public class Solicitud {
         this.nombreTecnico = nombreTecnico;
     }
 
-    public String getNombreUsuarioRegistro() {
-        return nombreUsuarioRegistro;
-    }
-
     public void setNombreUsuarioRegistro(String nombreUsuarioRegistro) {
         this.nombreUsuarioRegistro = nombreUsuarioRegistro;
-    }
-
-    public boolean cambiarEstado(EstadoSolicitud nuevoEstado) {
-        if (estado.canTransitionTo(nuevoEstado)) {
-            this.estado = nuevoEstado;
-            return true;
-        }
-        return false;
-    }
-
-    public boolean asignarTecnico(int idTecnico) {
-        if (this.estado == EstadoSolicitud.PENDIENTE) {
-            this.idTecnico = idTecnico;
-            this.estado = EstadoSolicitud.ASIGNADA;
-            return true;
-        }
-        return false;
     }
 
     @Override
