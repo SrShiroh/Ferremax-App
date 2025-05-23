@@ -189,7 +189,7 @@ public class AdminMainFrame extends JFrame {
         btnRefresh.addActionListener(e -> actualizarTodasLasTablas());
         userInfoPanel.add(btnRefresh);
 
-        JLabel lblUsername = new JLabel("Admin");
+        JLabel lblUsername = new JLabel(LoginController.getUsuarioLogueado().getNombre());
         lblUsername.setFont(new Font("Arial", Font.PLAIN, 14));
         userInfoPanel.add(lblUsername);
 

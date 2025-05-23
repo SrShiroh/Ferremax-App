@@ -1512,15 +1512,15 @@ public class EmployeeMainFrame extends JFrame {
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
 
         JButton btnActualizar = new JButton("Actualizar Información");
-        btnActualizar.setBackground(new Color(0, 123, 255));
-        btnActualizar.setForeground(Color.WHITE);
+        btnActualizar.setBackground(new Color(0, 255, 0));
+        btnActualizar.setForeground(Color.BLACK);
         btnActualizar.setFocusPainted(false);
         btnActualizar.setFont(new Font("Arial", Font.BOLD, 14));
         btnActualizar.setPreferredSize(new Dimension(220, 40));
 
         JButton btnCancelar = new JButton("Cancelar");
-        btnCancelar.setBackground(new Color(108, 117, 125));
-        btnCancelar.setForeground(Color.WHITE);
+        btnCancelar.setBackground(new Color(255, 0, 0));
+        btnCancelar.setForeground(Color.BLACK);
         btnCancelar.setFocusPainted(false);
         btnCancelar.setFont(new Font("Arial", Font.PLAIN, 14));
         btnCancelar.setPreferredSize(new Dimension(120, 40));
