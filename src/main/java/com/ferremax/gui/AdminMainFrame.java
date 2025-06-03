@@ -1,11 +1,9 @@
 package com.ferremax.gui;
 
 import com.ferremax.controller.LoginController;
-import com.ferremax.model.EstadoSolicitud;
-import com.ferremax.model.RolUsuario;
-import com.ferremax.model.Solicitud;
-import com.ferremax.model.Usuario;
+import com.ferremax.model.*;
 import com.ferremax.dao.*;
+import com.ferremax.util.Validations;
 
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -846,7 +844,7 @@ public class AdminMainFrame extends JFrame {
                 return;
             }
 
-            if (!correo.isEmpty() && !correo.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+            if (!correo.isEmpty() && !Validations.isValidEmail(correo)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese un correo válido",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -865,7 +863,7 @@ public class AdminMainFrame extends JFrame {
                 return;
             }
 
-            if (!hora.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            if (Validations.isValidTime(hora)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese una hora válida en formato " + TIME_FORMAT,
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -1039,7 +1037,7 @@ public class AdminMainFrame extends JFrame {
                 return;
             }
 
-            if (!correo.isEmpty() && !correo.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+            if (!correo.isEmpty() && !Validations.isValidEmail(correo)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese un correo válido",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -1058,7 +1056,7 @@ public class AdminMainFrame extends JFrame {
                 return;
             }
 
-            if (!hora.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            if (Validations.isValidTime(hora)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese una hora válida en formato " + TIME_FORMAT,
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -1472,7 +1470,7 @@ public class AdminMainFrame extends JFrame {
                 return;
             }
 
-            if (!correo.isEmpty() && !correo.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+            if (!correo.isEmpty() && !Validations.isValidEmail(correo)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese un correo válido",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -1752,7 +1750,7 @@ public class AdminMainFrame extends JFrame {
                     return;
                 }
 
-                if (!correo.isEmpty() && !correo.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+                if (!correo.isEmpty() && !Validations.isValidEmail(correo)) {
                     JOptionPane.showMessageDialog(dialog,
                             "El formato del correo electrónico no es válido",
                             "Error", JOptionPane.ERROR_MESSAGE);

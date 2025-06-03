@@ -1,14 +1,24 @@
 package com.ferremax;
 
+import com.ferremax.gui.AdminRegister;
 import com.ferremax.gui.LoginFrame;
+import com.ferremax.dao.UsuarioDAO;
 import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
         configureLookAndFeel();
-        java.awt.EventQueue.invokeLater(() -> {
-            new LoginFrame().setVisible(true);
-        });
+
+        if (UsuarioDAO.checkAdminExists()) {
+            java.awt.EventQueue.invokeLater(() -> {
+                new LoginFrame().setVisible(true);
+            });
+        } else {
+            java.awt.EventQueue.invokeLater(() -> {
+                new AdminRegister().setVisible(true);
+            });
+        }
+
     }
 
     private static void configureLookAndFeel() {

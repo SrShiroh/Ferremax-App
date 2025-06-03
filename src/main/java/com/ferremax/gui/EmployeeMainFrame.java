@@ -1,12 +1,9 @@
 package com.ferremax.gui;
 
 import com.ferremax.controller.LoginController;
-import com.ferremax.dao.SolicitudDAO;
-import com.ferremax.dao.UsuarioDAO;
-import com.ferremax.model.EstadoSolicitud;
-import com.ferremax.model.RolUsuario;
-import com.ferremax.model.Solicitud;
-import com.ferremax.model.Usuario;
+import com.ferremax.dao.*;
+import com.ferremax.model.*;
+import com.ferremax.util.Validations;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -764,7 +761,7 @@ public class EmployeeMainFrame extends JFrame {
                 return;
             }
 
-            if (!correo.isEmpty() && !correo.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+            if (!correo.isEmpty() && Validations.isValidEmail(correo) ) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese un correo válido",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -783,7 +780,7 @@ public class EmployeeMainFrame extends JFrame {
                 return;
             }
 
-            if (!hora.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            if (Validations.isValidTime(hora)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese una hora válida en formato " + TIME_FORMAT,
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -957,7 +954,7 @@ public class EmployeeMainFrame extends JFrame {
                 return;
             }
 
-            if (!correo.isEmpty() && !correo.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+            if (!correo.isEmpty() && !Validations.isValidEmail(correo)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese un correo válido",
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -976,7 +973,7 @@ public class EmployeeMainFrame extends JFrame {
                 return;
             }
 
-            if (!hora.matches("^([01]?[0-9]|2[0-3]):[0-5][0-9]$")) {
+            if (Validations.isValidTime(hora)) {
                 JOptionPane.showMessageDialog(panel,
                         "Por favor, ingrese una hora válida en formato " + TIME_FORMAT,
                         "Error", JOptionPane.ERROR_MESSAGE);
@@ -1585,7 +1582,7 @@ public class EmployeeMainFrame extends JFrame {
             boolean intencionCambioPassword = !passNuevaInput.isEmpty();
 
             if (intencionCambioCorreo) {
-                if (!nuevoCorreoInput.matches("^[\\w.%+-]+@[\\w.-]+\\.[a-zA-Z]{2,6}$")) {
+                if (!Validations.isValidEmail(nuevoCorreoInput)) {
                     JOptionPane.showMessageDialog(panel, "El formato del nuevo correo electrónico no es válido.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -1596,8 +1593,8 @@ public class EmployeeMainFrame extends JFrame {
             }
 
             if (intencionCambioTelefono) {
-                String telefonoVerificado = verificarTelefono(nuevoTelefonoInput);
-                if (telefonoVerificado.isEmpty() && !nuevoTelefonoInput.isEmpty()) {
+                String telefonoVerificado = String.valueOf(Validations.isValidPhoneNumber(nuevoTelefonoInput));
+                if (telefonoVerificado.isEmpty()) {
                     JOptionPane.showMessageDialog(panel, "El formato del teléfono no es válido. Use solo números (7-15 dígitos) con o sin prefijo +", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -1722,21 +1719,6 @@ public class EmployeeMainFrame extends JFrame {
 
         return panel;
     }
-
-    private String verificarTelefono(String telefono) {
-        if (telefono == null) {
-            return "";
-        }
-        String telefonoLimpio = telefono.trim();
-
-        if (telefonoLimpio.isEmpty()) {
-            return "";
-        }
-        String regex = "^\\+?\\d{7,15}$";
-        return telefonoLimpio.matches(regex) ? telefonoLimpio : "";
-    }
-
-
 
     private void actualizarTablaSolicitudes() {
         int index = getComponentIndex(contentPanel, PANEL_SOLICITUDES);
