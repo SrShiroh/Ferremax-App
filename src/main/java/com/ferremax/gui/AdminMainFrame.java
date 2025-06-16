@@ -837,7 +837,7 @@ public class AdminMainFrame extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton btnGuardar = new JButton("Guardar Cambios");
+        JButton btnGuardar = new JButton("Guardar");
         btnGuardar.setBackground(new Color(46, 204, 113));
         btnGuardar.setForeground(Color.BLACK);
         btnGuardar.setFocusPainted(false);
@@ -1030,7 +1030,7 @@ public class AdminMainFrame extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton btnGuardar = new JButton("Guardar Solicitud");
+        JButton btnGuardar = new JButton("Guardar");
         btnGuardar.setBackground(new Color(46, 204, 113));
         btnGuardar.setForeground(Color.BLACK);
         btnGuardar.setFocusPainted(false);
@@ -1465,7 +1465,7 @@ public class AdminMainFrame extends JFrame {
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
         buttonPanel.setBackground(Color.WHITE);
 
-        JButton btnGuardar = new JButton("Guardar Usuario");
+        JButton btnGuardar = new JButton("Guardar");
         btnGuardar.setBackground(new Color(46, 204, 113));
         btnGuardar.setForeground(Color.BLACK);
         btnGuardar.setFocusPainted(false);
@@ -1741,7 +1741,7 @@ public class AdminMainFrame extends JFrame {
             btnGuardar.setForeground(Color.BLACK);
             btnGuardar.setFocusPainted(false);
 
-            JButton btnEliminar = new JButton("Eliminar Usuario");
+            JButton btnEliminar = new JButton("Eliminar");
             btnEliminar.setBackground(new Color(231, 76, 60));
             btnEliminar.setForeground(Color.BLACK);
             btnEliminar.setFocusPainted(false);

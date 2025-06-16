@@ -203,7 +203,7 @@ public class EmployeeMainFrame extends JFrame {
         panel.setBackground(new Color(233, 236, 239));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
 
-        JLabel lblCopyright = new JLabel("© 2025 Ferremax - Sistema de Gestión de Aires Acondicionados");
+        JLabel lblCopyright = new JLabel("© 2025 Ferremax - Coded by Santiago & Facundo");
         lblCopyright.setFont(new Font("Arial", Font.PLAIN, 12));
         panel.add(lblCopyright, BorderLayout.WEST);
 

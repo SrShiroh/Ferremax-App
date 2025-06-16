@@ -28,12 +28,17 @@ CREATE TABLE Estados_Solicitud (
     descripcion VARCHAR(255)
 );
 
-CREATE TABLE Solicitudes (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    nombre_solicitante VARCHAR(100) NOT NULL,
+CREATE TABLE Clientes (
+	id INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
+    nombre_completo VARCHAR(255) NOT NULL,
     correo VARCHAR(100),
     telefono VARCHAR(20),
-    direccion TEXT NOT NULL,
+    direccion TEXT NOT NULL
+);
+
+CREATE TABLE Solicitudes (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INT NOT NULL,
     fecha_solicitud DATETIME DEFAULT CURRENT_TIMESTAMP,
     fecha_programada DATE NOT NULL,
     hora_programada TIME NOT NULL,
@@ -68,8 +73,8 @@ INSERT INTO Estados_Solicitud (nombre, descripcion) VALUES
 ('Completada', 'Reparación finalizada con éxito'),
 ('Cancelada', 'Solicitud cancelada');
 
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', '$2a$10$u8ugkNFw3R.uxC2Ps.87uec3sSsGiDnI8.09Ih/8rTpsn/Se0CNr.', 1);
-INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('facu' ,'Facundo', 'facundo@gmail.com', '$2a$10$9yU.Pa5VBxFhKt7q.tkBNecS0.OjQHDcsQyjKElnH6ysmBnn8Bq26', 1);
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('shiroh' ,'Shiroh', 'srshiroh@gmail.com', '$2a$10$u8ugkNFw3R.uxC2Ps.87uec3sSsGiDnI8.09Ih/8rTpsn/Se0CNr.', 2);
+INSERT INTO Usuarios (usuario, nombre, correo, contrasena, id_rol) VALUES ('facu' ,'Facundo', 'facundo@gmail.com', '$2a$10$9yU.Pa5VBxFhKt7q.tkBNecS0.OjQHDcsQyjKElnH6ysmBnn8Bq26', 2);
 
 INSERT INTO Solicitudes (nombre_solicitante, correo, telefono, direccion, fecha_programada, hora_programada, id_estado, id_usuario_registro)
 VALUES ('Carlos Santos', 'Shiroh@example.com', '091662667', 'Idk', '2025-07-24', '19:25:00', 1, 1);
