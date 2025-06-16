@@ -14,12 +14,15 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class AdminMainFrame extends JFrame {
 
@@ -86,7 +89,6 @@ public class AdminMainFrame extends JFrame {
         panel.add(new JSeparator());
         panel.add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Cambiado el estilo de los botones del menú para que coincidan con la imagen
         addMenuItem(panel, "Dashboard", PANEL_INICIO, "Inicio");
         addMenuItem(panel, "Gestión de Solicitudes", PANEL_SOLICITUDES, "Solicitudes");
         addMenuItem(panel, "Gestión de Usuarios", PANEL_USUARIOS, "Usuarios");
@@ -139,14 +141,12 @@ public class AdminMainFrame extends JFrame {
         JPanel menuItem = new JPanel(new BorderLayout());
         menuItem.setBackground(new Color(33, 33, 33));
         menuItem.setBorder(BorderFactory.createCompoundBorder(
-                // Agregado un borde visible para los botones del menú
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
         JLabel lblTitle = new JLabel(title);
-        // Aumentado el tamaño de la fuente
         lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
         lblTitle.setForeground(Color.WHITE);
         menuItem.add(lblTitle, BorderLayout.CENTER);
@@ -161,7 +161,6 @@ public class AdminMainFrame extends JFrame {
             @Override
             public void mouseEntered(MouseEvent e) {
                 menuItem.setBackground(new Color(66, 66, 66));
-                // Agregar un borde al pasar el mouse
                 menuItem.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 3, 0, 0, accentColor),
                         BorderFactory.createEmptyBorder(15, 12, 15, 15)
@@ -171,7 +170,6 @@ public class AdminMainFrame extends JFrame {
             @Override
             public void mouseExited(MouseEvent e) {
                 menuItem.setBackground(new Color(33, 33, 33));
-                // Restaurar el borde original
                 menuItem.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
                         BorderFactory.createEmptyBorder(15, 15, 15, 15)
@@ -286,8 +284,8 @@ public class AdminMainFrame extends JFrame {
                             table.getColumnModel().getColumn(6).setCellEditor(accionesEditor);
                         }
 
-                        table.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
-                        table.getColumnModel().getColumn(6).setPreferredWidth(250); // Acciones
+                        table.getColumnModel().getColumn(0).setPreferredWidth(50);
+                        table.getColumnModel().getColumn(6).setPreferredWidth(250);
 
                         table.revalidate();
                         table.repaint();
@@ -349,13 +347,11 @@ public class AdminMainFrame extends JFrame {
     private JPanel createStatCard(String title, String value, Color accentColor) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        // Agregado un borde más visible
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 2, true),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
 
-        // Aumentado el tamaño del panel para hacerlo más cuadrado
         panel.setPreferredSize(new Dimension(250, 200));
 
         JPanel headerPanel = new JPanel();
@@ -364,13 +360,11 @@ public class AdminMainFrame extends JFrame {
         panel.add(headerPanel, BorderLayout.NORTH);
 
         JLabel lblValue = new JLabel(value);
-        // Aumentado el tamaño de la fuente
         lblValue.setFont(new Font("Arial", Font.BOLD, 48));
         lblValue.setHorizontalAlignment(JLabel.CENTER);
         panel.add(lblValue, BorderLayout.CENTER);
 
         JLabel lblTitle = new JLabel(title);
-        // Aumentado el tamaño de la fuente del título
         lblTitle.setFont(new Font("Arial", Font.BOLD, 18));
         lblTitle.setHorizontalAlignment(JLabel.CENTER);
         lblTitle.setBorder(BorderFactory.createEmptyBorder(0, 0, 20, 0));
@@ -519,6 +513,8 @@ public class AdminMainFrame extends JFrame {
         table.getColumnModel().getColumn(6).setPreferredWidth(300);
         table.getColumnModel().getColumn(0).setPreferredWidth(50);
 
+        table.setRowSelectionAllowed(false);
+        table.setCellSelectionEnabled(false);
 
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -600,46 +596,79 @@ public class AdminMainFrame extends JFrame {
                 }
                 addInfoRow(infoPanel, "Técnico Asignado:", nombreTecnico);
 
-                JLabel lblNotas = new JLabel("Notas:", JLabel.LEFT);
-                lblNotas.setFont(new Font("Arial", Font.BOLD, 12));
-                addInfoRow(infoPanel, "Notas:", solicitud.getNotas());
+                JLabel lblNotasTitle = new JLabel("Notas:", JLabel.LEFT);
+                lblNotasTitle.setFont(new Font("Arial", Font.BOLD, 12));
 
-                JTextArea txtNotas = new JTextArea(solicitud.getNotas());
-                txtNotas.setEditable(false);
-                txtNotas.setLineWrap(true);
-                txtNotas.setWrapStyleWord(true);
-                txtNotas.setBackground(new Color(245, 245, 245));
-                txtNotas.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-                JScrollPane scrollNotas = new JScrollPane(txtNotas);
-                scrollNotas.setPreferredSize(new Dimension(400, 100));
+                JTextArea txtDisplayNotas = new JTextArea(solicitud.getNotas() != null ? solicitud.getNotas() : "");
+                txtDisplayNotas.setEditable(false);
+                txtDisplayNotas.setLineWrap(true);
+                txtDisplayNotas.setWrapStyleWord(true);
+                txtDisplayNotas.setBackground(new Color(245, 245, 245));
+                txtDisplayNotas.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-                JPanel notasPanel = new JPanel(new BorderLayout(5, 5));
-                notasPanel.setBackground(Color.WHITE);
-                notasPanel.add(lblNotas, BorderLayout.NORTH);
-                notasPanel.add(scrollNotas, BorderLayout.CENTER);
+                JScrollPane scrollDisplayNotas = new JScrollPane(txtDisplayNotas);
+                scrollDisplayNotas.setPreferredSize(new Dimension(400, 100));
+                scrollDisplayNotas.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
-                detallePanel.add(infoPanel, BorderLayout.CENTER);
-                detallePanel.add(notasPanel, BorderLayout.SOUTH);
+                JPanel notasDisplayPanel = new JPanel(new BorderLayout(0, 5));
+                notasDisplayPanel.setBackground(Color.WHITE);
+                notasDisplayPanel.add(lblNotasTitle, BorderLayout.NORTH);
+                notasDisplayPanel.add(scrollDisplayNotas, BorderLayout.CENTER);
+
+                JPanel centerContentPanel = new JPanel(new BorderLayout(0, 10));
+                centerContentPanel.setBackground(Color.WHITE);
+                centerContentPanel.add(infoPanel, BorderLayout.CENTER);
+                centerContentPanel.add(notasDisplayPanel, BorderLayout.SOUTH);
+
+                detallePanel.add(centerContentPanel, BorderLayout.CENTER);
 
                 JDialog dialog = new JDialog();
-                dialog.setTitle("Detalles de Solicitud");
-                dialog.setModal(true);
-                dialog.setSize(600, 500);
-                dialog.setLocationRelativeTo(null);
-                dialog.setContentPane(detallePanel);
-
-                JButton btnCerrar = new JButton("Cerrar");
-                btnCerrar.setBackground(new Color(52, 152, 219));
-                btnCerrar.setForeground(Color.BLACK);
-                btnCerrar.setFocusPainted(false);
-                btnCerrar.addActionListener(e -> dialog.dispose());
 
                 JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 buttonPanel.setBackground(Color.WHITE);
+                buttonPanel.removeAll();
+
+                if (solicitud.getEstado() != EstadoSolicitud.CANCELADA && solicitud.getEstado() != EstadoSolicitud.COMPLETADA) {
+                    JButton btnCancelarSolicitud = new JButton("Cancelar Solicitud");
+                    btnCancelarSolicitud.setBackground(new Color(220, 53, 69));
+                    btnCancelarSolicitud.setForeground(Color.BLACK);
+                    btnCancelarSolicitud.setFocusPainted(false);
+
+                    btnCancelarSolicitud.addActionListener(e -> {
+                        int confirm = JOptionPane.showConfirmDialog(dialog,
+                                "¿Está seguro de que desea cancelar esta solicitud?",
+                                "Confirmar Cancelación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            solicitud.setEstado(EstadoSolicitud.CANCELADA);
+                            if (SolicitudDAO.update(solicitud)) {
+                                JOptionPane.showMessageDialog(dialog, "Solicitud cancelada.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                actualizarTablaSolicitudes();
+                                actualizarEstadisticas(PANEL_SOLICITUDES);
+                                dialog.dispose();
+                            } else {
+                                JOptionPane.showMessageDialog(dialog, "Error al cancelar la solicitud.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    });
+                    buttonPanel.add(btnCancelarSolicitud);
+                }
+
+                JButton btnCerrar = new JButton("Cerrar");
+                btnCerrar.setBackground(new Color(108, 117, 125));
+                btnCerrar.setForeground(Color.BLACK);
+                btnCerrar.setFocusPainted(false);
+                btnCerrar.addActionListener(e -> dialog.dispose());
                 buttonPanel.add(btnCerrar);
 
                 detallePanel.add(buttonPanel, BorderLayout.SOUTH);
+                buttonPanel.revalidate();
+                buttonPanel.repaint();
 
+                dialog.setTitle("Detalles de Solicitud");
+                dialog.setModal(true);
+                dialog.setSize(600, 600);
+                dialog.setLocationRelativeTo(null);
+                dialog.setContentPane(detallePanel);
                 dialog.setVisible(true);
             } else {
                 JOptionPane.showMessageDialog(null,
@@ -1876,138 +1905,166 @@ public class AdminMainFrame extends JFrame {
 
 
     private JPanel createClientesPanel() {
-        JPanel panel = new JPanel(new BorderLayout(0, 20));
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
         panel.setBackground(Color.WHITE);
         panel.setName(PANEL_CLIENTES);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setOpaque(false);
-        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
         JLabel lblTitle = new JLabel("Gestión de Clientes");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 20));
         headerPanel.add(lblTitle, BorderLayout.WEST);
 
-        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         searchPanel.setOpaque(false);
         JTextField txtSearch = new JTextField(20);
         JButton btnSearch = new JButton("Buscar");
         btnSearch.setBackground(new Color(52, 152, 219));
         btnSearch.setForeground(Color.BLACK);
         btnSearch.setFocusPainted(false);
+        btnSearch.setMargin(new Insets(5, 10, 5, 10));
+
 
         searchPanel.add(new JLabel("Cliente: "));
         searchPanel.add(txtSearch);
+        searchPanel.add(Box.createRigidArea(new Dimension(5,0)));
         searchPanel.add(btnSearch);
 
         headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        java.util.List<String> clientesNombres = obtenerClientesUnicos();
+        String[] columnNames = {"Nombre", "Nº Solicitudes", "Acciones"};
+        DefaultTableModel model = new DefaultTableModel(getClientesTableData(), columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 2;
+            }
+        };
 
-        JPanel clientesContainer = new JPanel();
-        clientesContainer.setLayout(new BorderLayout());
-        clientesContainer.setBackground(Color.WHITE);
+        JTable table = new JTable(model);
+        table.setRowHeight(40);
+        table.setShowVerticalLines(false);
+        table.setShowHorizontalLines(true);
+        table.getTableHeader().setBackground(new Color(240, 240, 240));
+        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
+        table.setIntercellSpacing(new Dimension(0, 0));
 
-        JPanel clientesGrid = new JPanel();
-        clientesGrid.setLayout(new BoxLayout(clientesGrid, BoxLayout.Y_AXIS));
-        clientesGrid.setBackground(Color.WHITE);
+        table.getColumnModel().getColumn(2).setCellRenderer((table1, value, isSelected, hasFocus, row, column) -> {
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+            buttonPanel.setOpaque(false);
+            buttonPanel.setBackground(isSelected ? table1.getSelectionBackground() : Color.WHITE);
+            JButton btnVerHistorial = new JButton("Ver Historial");
+            btnVerHistorial.setBackground(new Color(52, 152, 219));
+            btnVerHistorial.setForeground(Color.BLACK);
+            btnVerHistorial.setFocusPainted(false);
+            btnVerHistorial.setMargin(new Insets(5, 15, 5, 15));
+            buttonPanel.add(btnVerHistorial);
+            return buttonPanel;
+        });
 
-        for (String nombreCliente : clientesNombres) {
-            JPanel clientePanel = crearPanelCliente(nombreCliente);
-            clientesGrid.add(clientePanel);
-            clientesGrid.add(Box.createRigidArea(new Dimension(0, 10)));
-        }
+        table.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            private JButton button;
+            private String currentClientName;
+            private JPanel editorPanel;
 
-        JScrollPane scrollPane = new JScrollPane(clientesGrid);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            {
+                editorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+                editorPanel.setOpaque(false);
+                editorPanel.setBackground(Color.WHITE);
+                button = new JButton("Ver Historial");
+                button.setBackground(new Color(52, 152, 219));
+                button.setForeground(Color.BLACK);
+                button.setFocusPainted(false);
+                button.setMargin(new Insets(5, 15, 5, 15));
+                button.addActionListener(e -> {
+                    fireEditingStopped();
+                    if (currentClientName != null) {
+                        AdminMainFrame.this.verHistorialCliente(currentClientName);
+                    }
+                });
+                editorPanel.add(button);
+            }
 
-        clientesGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                currentClientName = table.getValueAt(row, 0).toString();
+                editorPanel.setBackground(isSelected ? table.getSelectionBackground() : Color.WHITE);
+                return editorPanel;
+            }
 
-        clientesContainer.add(scrollPane, BorderLayout.CENTER);
+            @Override
+            public Object getCellEditorValue() {
+                return "";
+            }
 
-        panel.add(clientesContainer, BorderLayout.CENTER);
+            @Override
+            public boolean stopCellEditing() {
+                return super.stopCellEditing();
+            }
+        });
+
+        table.getColumnModel().getColumn(0).setPreferredWidth(250);
+        table.getColumnModel().getColumn(1).setPreferredWidth(150);
+        table.getColumnModel().getColumn(2).setPreferredWidth(200);
+
+        table.setRowSelectionAllowed(false);
+        table.setCellSelectionEnabled(false);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220,220,220)));
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
 
         btnSearch.addActionListener(e -> {
-            String busqueda = txtSearch.getText().trim().toLowerCase();
-            filtrarClientes(clientesGrid, busqueda);
+            String text = txtSearch.getText().trim();
+            if (text.length() == 0) {
+                sorter.setRowFilter(null);
+            } else {
+                sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text), 0));
+            }
         });
 
         txtSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String busqueda = txtSearch.getText().trim().toLowerCase();
-                    filtrarClientes(clientesGrid, busqueda);
+                    btnSearch.doClick();
                 }
             }
         });
-
         return panel;
+    }
+
+    private Object[][] getClientesTableData() {
+        java.util.List<String> clientesNombres = obtenerClientesUnicos();
+        Object[][] data = new Object[clientesNombres.size()][3];
+        for (int i = 0; i < clientesNombres.size(); i++) {
+            String nombreCliente = clientesNombres.get(i);
+            data[i][0] = nombreCliente;
+            data[i][1] = contarSolicitudesPorCliente(nombreCliente);
+            data[i][2] = "Ver Historial";
+        }
+        return data;
     }
 
     private java.util.List<String> obtenerClientesUnicos() {
         java.util.List<String> clientesUnicos = new ArrayList<>();
         java.util.List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
-
         java.util.Set<String> nombresUnicos = new java.util.HashSet<>();
-
         for (Solicitud solicitud : solicitudes) {
             String nombreCliente = solicitud.getNombreSolicitante();
             if (nombreCliente != null && !nombreCliente.isEmpty()) {
                 nombresUnicos.add(nombreCliente);
             }
         }
-
         clientesUnicos.addAll(nombresUnicos);
         java.util.Collections.sort(clientesUnicos);
-
         return clientesUnicos;
     }
-
-    private JPanel crearPanelCliente(String nombreCliente) {
-        JPanel panel = new JPanel(new BorderLayout(10, 0));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-        panel.setName("cliente-" + nombreCliente.replaceAll("\\s+", "_").toLowerCase());
-
-        JPanel infoPanel = new JPanel(new GridLayout(2, 1));
-        infoPanel.setOpaque(false);
-
-        JLabel lblNombre = new JLabel(nombreCliente);
-        lblNombre.setFont(new Font("Arial", Font.BOLD, 16));
-        infoPanel.add(lblNombre);
-
-        int cantidadSolicitudes = contarSolicitudesPorCliente(nombreCliente);
-        JLabel lblCantidad = new JLabel("Solicitudes: " + cantidadSolicitudes);
-        lblCantidad.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblCantidad.setForeground(new Color(100, 100, 100));
-        infoPanel.add(lblCantidad);
-
-        panel.add(infoPanel, BorderLayout.WEST);
-
-        JPanel accionesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        accionesPanel.setOpaque(false);
-
-        JButton btnHistorial = new JButton("Ver Historial");
-        btnHistorial.setBackground(new Color(52, 152, 219));
-        btnHistorial.setForeground(Color.BLACK);
-        btnHistorial.setFocusPainted(false);
-        btnHistorial.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnHistorial.addActionListener(e -> verHistorialCliente(nombreCliente));
-
-        accionesPanel.add(btnHistorial);
-        panel.add(accionesPanel, BorderLayout.EAST);
-
-        return panel;
-    }
-
 
     private void verHistorialCliente(String nombreCliente) {
         java.util.List<Solicitud> solicitudesCliente = obtenerSolicitudesPorCliente(nombreCliente);
@@ -2060,28 +2117,16 @@ public class AdminMainFrame extends JFrame {
             if (column == 4) {
                 String estado = value.toString();
                 switch (estado) {
-                    case "Pendiente":
-                        label.setBackground(new Color(253, 237, 176));
-                        break;
-                    case "Asignada":
-                        label.setBackground(new Color(214, 234, 248));
-                        break;
-                    case "En Progreso":
-                        label.setBackground(new Color(217, 237, 247));
-                        break;
-                    case "Completada":
-                        label.setBackground(new Color(212, 237, 218));
-                        break;
-                    case "Cancelada":
-                        label.setBackground(new Color(248, 215, 218));
-                        break;
-                    default:
-                        label.setBackground(isSelected ? table1.getSelectionBackground() : Color.WHITE);
+                    case "Pendiente": label.setBackground(new Color(253, 237, 176)); break;
+                    case "Asignada": label.setBackground(new Color(214, 234, 248)); break;
+                    case "En Progreso": label.setBackground(new Color(217, 237, 247)); break;
+                    case "Completada": label.setBackground(new Color(212, 237, 218)); break;
+                    case "Cancelada": label.setBackground(new Color(248, 215, 218)); break;
+                    default: label.setBackground(isSelected ? table1.getSelectionBackground() : Color.WHITE);
                 }
             } else {
                 label.setBackground(isSelected ? table1.getSelectionBackground() : Color.WHITE);
             }
-
             label.setForeground(isSelected ? table1.getSelectionForeground() : Color.BLACK);
             return label;
         });
@@ -2089,8 +2134,8 @@ public class AdminMainFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-        buttonPanel.setOpaque(false);
+        JPanel buttonPanelDialog = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        buttonPanelDialog.setOpaque(false);
 
         JButton btnVerDetalles = new JButton("Ver Detalles");
         btnVerDetalles.setBackground(new Color(52, 152, 219));
@@ -2116,10 +2161,10 @@ public class AdminMainFrame extends JFrame {
         btnCerrar.setFocusPainted(false);
         btnCerrar.addActionListener(e -> dialog.dispose());
 
-        buttonPanel.add(btnVerDetalles);
-        buttonPanel.add(btnCerrar);
+        buttonPanelDialog.add(btnVerDetalles);
+        buttonPanelDialog.add(btnCerrar);
 
-        panel.add(buttonPanel, BorderLayout.SOUTH);
+        panel.add(buttonPanelDialog, BorderLayout.SOUTH);
 
         dialog.setContentPane(panel);
         dialog.setVisible(true);
@@ -2128,63 +2173,30 @@ public class AdminMainFrame extends JFrame {
     private java.util.List<Solicitud> obtenerSolicitudesPorCliente(String nombreCliente) {
         java.util.List<Solicitud> solicitudesCliente = new ArrayList<>();
         java.util.List<Solicitud> todasSolicitudes = SolicitudDAO.getSolicitudes();
-
         for (Solicitud solicitud : todasSolicitudes) {
             if (nombreCliente.equals(solicitud.getNombreSolicitante())) {
                 solicitudesCliente.add(solicitud);
             }
         }
-
         solicitudesCliente.sort((s1, s2) -> {
+            if (s1.getFechaSolicitud() == null && s2.getFechaSolicitud() == null) return 0;
             if (s1.getFechaSolicitud() == null) return 1;
             if (s2.getFechaSolicitud() == null) return -1;
             return s2.getFechaSolicitud().compareTo(s1.getFechaSolicitud());
         });
-
         return solicitudesCliente;
     }
 
     private int contarSolicitudesPorCliente(String nombreCliente) {
         int contador = 0;
         java.util.List<Solicitud> solicitudes = SolicitudDAO.getSolicitudes();
-
         for (Solicitud solicitud : solicitudes) {
             if (nombreCliente.equals(solicitud.getNombreSolicitante())) {
                 contador++;
             }
         }
-
         return contador;
     }
 
-    private void filtrarClientes(JPanel clientesGrid, String busqueda) {
-        for (Component comp : clientesGrid.getComponents()) {
-            if (comp instanceof JPanel) {
-                JPanel clientePanel = (JPanel) comp;
-                String nombrePanel = clientePanel.getName();
-
-                if (nombrePanel != null && nombrePanel.startsWith("cliente-")) {
-                    for (Component child : clientePanel.getComponents()) {
-                        if (child instanceof JPanel) {
-                            JPanel infoPanel = (JPanel) child;
-                            for (Component infoChild : infoPanel.getComponents()) {
-                                if (infoChild instanceof JLabel) {
-                                    JLabel lblNombre = (JLabel) infoChild;
-                                    String nombreCliente = lblNombre.getText().toLowerCase();
-
-                                    boolean coincide = busqueda.isEmpty() || nombreCliente.contains(busqueda);
-                                    clientePanel.setVisible(coincide);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        clientesGrid.revalidate();
-        clientesGrid.repaint();
-    }
 }
 

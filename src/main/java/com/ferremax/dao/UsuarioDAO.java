@@ -69,6 +69,24 @@ public class UsuarioDAO {
         return false;
     }
 
+    public static boolean verificarContrasena(int id, String passActualInput) {
+        String sql = "SELECT contrasena FROM Usuarios WHERE id = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    String storedPassword = rs.getString("contrasena");
+                    return BCrypt.checkpw(passActualInput, storedPassword);
+                }
+            }
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al verificar contraseña actual del usuario: " + id);
+        }
+        return false;
+    }
+
     public Usuario findByUsername(String username) {
         String sql = "SELECT * FROM Usuarios WHERE usuario = ?";
 

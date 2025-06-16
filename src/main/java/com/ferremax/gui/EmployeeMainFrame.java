@@ -9,6 +9,8 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableRowSorter;
+import javax.swing.RowFilter;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -20,6 +22,7 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 public class EmployeeMainFrame extends JFrame {
 
@@ -156,14 +159,12 @@ public class EmployeeMainFrame extends JFrame {
         JPanel menuItem = new JPanel(new BorderLayout());
         menuItem.setBackground(new Color(33, 33, 33));
         menuItem.setBorder(BorderFactory.createCompoundBorder(
-                // Agregado un borde visible para los botones del menú
                 BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         menuItem.setMaximumSize(new Dimension(Integer.MAX_VALUE, 60));
 
         JLabel lblTitle = new JLabel(title);
-        // Aumentado el tamaño de la fuente
         lblTitle.setFont(new Font("Arial", Font.BOLD, 16));
         lblTitle.setForeground(Color.WHITE);
         menuItem.add(lblTitle, BorderLayout.CENTER);
@@ -178,7 +179,6 @@ public class EmployeeMainFrame extends JFrame {
             @Override
             public void mouseEntered(MouseEvent e) {
                 menuItem.setBackground(new Color(66, 66, 66));
-                // Agregar un borde al pasar el mouse
                 menuItem.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 3, 0, 0, accentColor),
                         BorderFactory.createEmptyBorder(15, 12, 15, 15)
@@ -188,7 +188,6 @@ public class EmployeeMainFrame extends JFrame {
             @Override
             public void mouseExited(MouseEvent e) {
                 menuItem.setBackground(new Color(33, 33, 33));
-                // Restaurar el borde original
                 menuItem.setBorder(BorderFactory.createCompoundBorder(
                         BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(60, 60, 60)),
                         BorderFactory.createEmptyBorder(15, 15, 15, 15)
@@ -250,28 +249,23 @@ public class EmployeeMainFrame extends JFrame {
     private JPanel createStatCard(String title, String value, Color accentColor) {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(Color.WHITE);
-        // Borde visible pero con esquinas redondeadas
         panel.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1, true),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
 
-        // Modificado para ser mucho más ancho que alto
         panel.setPreferredSize(new Dimension(400, 100));
 
-        // Barra de color en la parte superior
         JPanel headerPanel = new JPanel();
         headerPanel.setBackground(accentColor);
         headerPanel.setPreferredSize(new Dimension(panel.getWidth(), 5));
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        // Valor centrado con fuente grande
         JLabel lblValue = new JLabel(value);
         lblValue.setFont(new Font("Arial", Font.BOLD, 32));
         lblValue.setHorizontalAlignment(JLabel.CENTER);
         panel.add(lblValue, BorderLayout.CENTER);
 
-        // Título en la parte inferior
         JLabel lblTitle = new JLabel(title);
         lblTitle.setFont(new Font("Arial", Font.BOLD, 14));
         lblTitle.setHorizontalAlignment(JLabel.CENTER);
@@ -500,6 +494,7 @@ public class EmployeeMainFrame extends JFrame {
                 txtNotas.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
                 JScrollPane scrollNotas = new JScrollPane(txtNotas);
                 scrollNotas.setPreferredSize(new Dimension(400, 100));
+                scrollNotas.setBorder(BorderFactory.createLineBorder(Color.GRAY));
 
                 JPanel notasOuterPanel = new JPanel(new BorderLayout(5,5));
                 notasOuterPanel.setBackground(Color.WHITE);
@@ -523,39 +518,89 @@ public class EmployeeMainFrame extends JFrame {
                 dialog.setLocationRelativeTo(null);
                 dialog.setContentPane(detallePanel);
 
-                JButton actionButton;
                 JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
                 buttonPanel.setBackground(Color.WHITE);
+                buttonPanel.removeAll();
 
-                if (LoginController.getUsuarioLogueado().getRol() == RolUsuario.TECNICO) {
-                    if (solicitud.getEstado() == EstadoSolicitud.PENDIENTE) {
-                        actionButton = createStyledButton("Reclamar", new Color(52, 152, 219));
-                        actionButton.addActionListener(e -> {
-                            int confirmacion = JOptionPane.showConfirmDialog(dialog,
-                                    "¿Está seguro de que desea reclamar esta solicitud?",
-                                    "Confirmar Reclamo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                            if (confirmacion == JOptionPane.YES_OPTION) {
-                                SolicitudDAO.asignarTecnico(solicitud.getId(), LoginController.getUsuarioLogueado().getId());
-                                solicitud.setIdTecnico(LoginController.getUsuarioLogueado().getId());
-                                solicitud.setEstado(EstadoSolicitud.ASIGNADA);
-                                SolicitudDAO.update(solicitud);
+                Usuario usuarioLogueado = LoginController.getUsuarioLogueado();
+                boolean isTecnico = usuarioLogueado.getRol() == RolUsuario.TECNICO;
+                boolean isEmpleado = usuarioLogueado.getRol() == RolUsuario.EMPLEADO;
+                boolean isSolicitudAsignadaAMi = isTecnico && solicitud.getIdTecnico() == usuarioLogueado.getId();
+
+                if (isTecnico && isSolicitudAsignadaAMi && solicitud.getEstado() == EstadoSolicitud.ASIGNADA) {
+                    JButton btnEnProceso = createStyledButton("En Proceso", new Color(23, 162, 184));
+                    btnEnProceso.addActionListener(e -> {
+                        int confirm = JOptionPane.showConfirmDialog(dialog,
+                                "¿Está seguro de que desea marcar esta solicitud como 'En Proceso'?",
+                                "Confirmar Estado", JOptionPane.YES_NO_OPTION);
+                        if (confirm == JOptionPane.YES_OPTION) {
+                            solicitud.setEstado(EstadoSolicitud.EN_PROCESO);
+                            if (SolicitudDAO.update(solicitud)) {
+                                JOptionPane.showMessageDialog(dialog, "Solicitud marcada como 'En Proceso'.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                actualizarTablaSolicitudes();
+                                actualizarEstadisticas(PANEL_SOLICITUDES);
+                                dialog.dispose();
+                            } else {
+                                JOptionPane.showMessageDialog(dialog, "Error al actualizar el estado.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    });
+                    buttonPanel.add(btnEnProceso);
+                }
+
+                if (isTecnico || isEmpleado) {
+                    if (solicitud.getEstado() != EstadoSolicitud.CANCELADA && solicitud.getEstado() != EstadoSolicitud.COMPLETADA) {
+                        JButton btnCancelarSolicitud = createStyledButton("Cancelar Solicitud", new Color(220, 53, 69));
+                        btnCancelarSolicitud.addActionListener(e -> {
+                            int confirm = JOptionPane.showConfirmDialog(dialog,
+                                    "¿Está seguro de que desea cancelar esta solicitud?",
+                                    "Confirmar Cancelación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                            if (confirm == JOptionPane.YES_OPTION) {
+                                solicitud.setEstado(EstadoSolicitud.CANCELADA);
+                                if (SolicitudDAO.update(solicitud)) {
+                                    JOptionPane.showMessageDialog(dialog, "Solicitud cancelada.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                                    actualizarTablaSolicitudes();
+                                    actualizarEstadisticas(PANEL_SOLICITUDES);
+                                    dialog.dispose();
+                                } else {
+                                    JOptionPane.showMessageDialog(dialog, "Error al cancelar la solicitud.", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        });
+                        buttonPanel.add(btnCancelarSolicitud);
+                    }
+                }
+
+                if (isTecnico && solicitud.getEstado() == EstadoSolicitud.PENDIENTE) {
+                    JButton btnReclamar = createStyledButton("Reclamar", new Color(52, 152, 219));
+                    btnReclamar.addActionListener(e -> {
+                        int confirmacion = JOptionPane.showConfirmDialog(dialog,
+                                "¿Está seguro de que desea reclamar esta solicitud?",
+                                "Confirmar Reclamo", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+                        if (confirmacion == JOptionPane.YES_OPTION) {
+                            SolicitudDAO.asignarTecnico(solicitud.getId(), usuarioLogueado.getId());
+                            solicitud.setIdTecnico(usuarioLogueado.getId());
+                            solicitud.setEstado(EstadoSolicitud.ASIGNADA);
+                            if (SolicitudDAO.update(solicitud)) {
                                 JOptionPane.showMessageDialog(dialog, "Solicitud reclamada y asignada.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                                 actualizarTablaSolicitudes();
                                 actualizarEstadisticas(PANEL_SOLICITUDES);
                                 dialog.dispose();
+                            } else {
+                                JOptionPane.showMessageDialog(dialog, "Error al reclamar la solicitud.", "Error", JOptionPane.ERROR_MESSAGE);
                             }
-                        });
-                    } else {
-                        actionButton = createStyledButton("Cerrar", new Color(108, 117, 125));
-                        actionButton.addActionListener(e -> dialog.dispose());
-                    }
-                } else {
-                    actionButton = createStyledButton("Cerrar", new Color(108, 117, 125));
-                    actionButton.addActionListener(e -> dialog.dispose());
+                        }
+                    });
+                    buttonPanel.add(btnReclamar);
                 }
 
-                buttonPanel.add(actionButton);
+                JButton btnCerrar = createStyledButton("Cerrar", new Color(108, 117, 125));
+                btnCerrar.addActionListener(e -> dialog.dispose());
+                buttonPanel.add(btnCerrar);
+
                 detallePanel.add(buttonPanel, BorderLayout.SOUTH);
+                buttonPanel.revalidate();
+                buttonPanel.repaint();
 
                 dialog.setVisible(true);
             } else {
@@ -1090,50 +1135,110 @@ public class EmployeeMainFrame extends JFrame {
         headerPanel.add(searchPanel, BorderLayout.EAST);
         panel.add(headerPanel, BorderLayout.NORTH);
 
-        List<String> clientesNombres = obtenerClientesUnicos();
+        String[] columnNames = {"Nombre", "Nº Solicitudes", "Acciones"};
+        DefaultTableModel tableModel = new DefaultTableModel(getEmployeeClientesTableData(), columnNames) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 2;
+            }
+        };
+        JTable clientesTable = new JTable(tableModel);
 
-        JPanel clientesContainer = new JPanel();
-        clientesContainer.setLayout(new BorderLayout());
-        clientesContainer.setBackground(Color.WHITE);
+        clientesTable.setRowHeight(40);
+        clientesTable.setShowVerticalLines(false);
+        clientesTable.setShowHorizontalLines(true);
+        clientesTable.getTableHeader().setBackground(new Color(240, 240, 240));
+        clientesTable.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
 
-        JPanel clientesGrid = new JPanel();
-        clientesGrid.setLayout(new BoxLayout(clientesGrid, BoxLayout.Y_AXIS));
-        clientesGrid.setBackground(Color.WHITE);
+        clientesTable.setRowSelectionAllowed(false);
+        clientesTable.setCellSelectionEnabled(false);
 
-        for (String nombreCliente : clientesNombres) {
-            JPanel clientePanel = crearPanelCliente(nombreCliente);
-            clientesGrid.add(clientePanel);
-            clientesGrid.add(Box.createRigidArea(new Dimension(0, 10)));
-        }
+        clientesTable.getColumnModel().getColumn(0).setPreferredWidth(250);
+        clientesTable.getColumnModel().getColumn(1).setPreferredWidth(120);
+        clientesTable.getColumnModel().getColumn(2).setPreferredWidth(180);
 
-        JScrollPane scrollPane = new JScrollPane(clientesGrid);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        clientesTable.getColumnModel().getColumn(2).setCellRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JPanel buttonRenderPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+                buttonRenderPanel.setOpaque(false);
+                JButton btnVerHistorial = createStyledButton("Ver Historial", new Color(52, 152, 219));
+                buttonRenderPanel.add(btnVerHistorial);
+                return buttonRenderPanel;
+            }
+        });
 
-        clientesGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+        clientesTable.getColumnModel().getColumn(2).setCellEditor(new DefaultCellEditor(new JCheckBox()) {
+            private JButton button;
+            private String currentClientName;
+            private JPanel editorPanel;
 
-        clientesContainer.add(scrollPane, BorderLayout.CENTER);
+            {
+                editorPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 5, 0));
+                editorPanel.setOpaque(false);
+                this.button = createStyledButton("Ver Historial", new Color(52, 152, 219));
+                this.button.addActionListener(e -> {
+                    fireEditingStopped();
+                    if (currentClientName != null) {
+                        EmployeeMainFrame.this.verHistorialCliente(currentClientName);
+                    }
+                });
+                editorPanel.add(this.button);
+            }
 
-        panel.add(clientesContainer, BorderLayout.CENTER);
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+                currentClientName = table.getValueAt(row, 0).toString();
+                return editorPanel;
+            }
+
+            @Override public Object getCellEditorValue() { return ""; }
+            @Override public boolean stopCellEditing() { return super.stopCellEditing(); }
+        });
+
+        JScrollPane scrollPane = new JScrollPane(clientesTable);
+        scrollPane.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        final TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(tableModel);
+        clientesTable.setRowSorter(sorter);
 
         btnSearch.addActionListener(e -> {
-            String busqueda = txtSearch.getText().trim().toLowerCase();
-            filtrarClientes(clientesGrid, busqueda);
+            String text = txtSearch.getText().trim();
+            if (text.length() == 0) {
+                sorter.setRowFilter(null);
+            } else {
+                try {
+                    sorter.setRowFilter(RowFilter.regexFilter("(?i)" + Pattern.quote(text), 0));
+                } catch (java.util.regex.PatternSyntaxException pse) {
+                    System.err.println("Invalid regex for search: " + pse.getMessage());
+                }
+            }
         });
 
         txtSearch.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    String busqueda = txtSearch.getText().trim().toLowerCase();
-                    filtrarClientes(clientesGrid, busqueda);
+                    btnSearch.doClick();
                 }
             }
         });
-
         return panel;
+    }
+
+    private Object[][] getEmployeeClientesTableData() {
+        List<Object[]> rows = new ArrayList<>();
+        List<String> clientesNombres = obtenerClientesUnicos();
+
+        for (String nombreCliente : clientesNombres) {
+            Object[] row = new Object[3];
+            row[0] = nombreCliente;
+            row[1] = contarSolicitudesPorCliente(nombreCliente);
+            row[2] = "";
+            rows.add(row);
+        }
+        return rows.toArray(new Object[0][]);
     }
 
     private List<String> obtenerClientesUnicos() {
@@ -1154,47 +1259,6 @@ public class EmployeeMainFrame extends JFrame {
 
         return clientesUnicos;
     }
-
-    private JPanel crearPanelCliente(String nombreCliente) {
-        JPanel panel = new JPanel(new BorderLayout(10, 0));
-        panel.setBackground(Color.WHITE);
-        panel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(230, 230, 230)),
-                BorderFactory.createEmptyBorder(15, 15, 15, 15)
-        ));
-        panel.setName("cliente-" + nombreCliente.replaceAll("\\s+", "_").toLowerCase());
-
-        JPanel infoPanel = new JPanel(new GridLayout(2, 1));
-        infoPanel.setOpaque(false);
-
-        JLabel lblNombre = new JLabel(nombreCliente);
-        lblNombre.setFont(new Font("Arial", Font.BOLD, 16));
-        infoPanel.add(lblNombre);
-
-        int cantidadSolicitudes = contarSolicitudesPorCliente(nombreCliente);
-        JLabel lblCantidad = new JLabel("Solicitudes: " + cantidadSolicitudes);
-        lblCantidad.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblCantidad.setForeground(new Color(100, 100, 100));
-        infoPanel.add(lblCantidad);
-
-        panel.add(infoPanel, BorderLayout.WEST);
-
-        JPanel accionesPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        accionesPanel.setOpaque(false);
-
-        JButton btnHistorial = new JButton("Ver Historial");
-        btnHistorial.setBackground(new Color(52, 152, 219));
-        btnHistorial.setForeground(Color.BLACK);
-        btnHistorial.setFocusPainted(false);
-        btnHistorial.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        btnHistorial.addActionListener(e -> verHistorialCliente(nombreCliente));
-
-        accionesPanel.add(btnHistorial);
-        panel.add(accionesPanel, BorderLayout.EAST);
-
-        return panel;
-    }
-
 
     private void verHistorialCliente(String nombreCliente) {
         List<Solicitud> solicitudesCliente = obtenerSolicitudesPorCliente(nombreCliente);
@@ -1342,36 +1406,6 @@ public class EmployeeMainFrame extends JFrame {
         }
 
         return contador;
-    }
-
-    private void filtrarClientes(JPanel clientesGrid, String busqueda) {
-        for (Component comp : clientesGrid.getComponents()) {
-            if (comp instanceof JPanel) {
-                JPanel clientePanel = (JPanel) comp;
-                String nombrePanel = clientePanel.getName();
-
-                if (nombrePanel != null && nombrePanel.startsWith("cliente-")) {
-                    for (Component child : clientePanel.getComponents()) {
-                        if (child instanceof JPanel) {
-                            JPanel infoPanel = (JPanel) child;
-                            for (Component infoChild : infoPanel.getComponents()) {
-                                if (infoChild instanceof JLabel) {
-                                    JLabel lblNombre = (JLabel) infoChild;
-                                    String nombreCliente = lblNombre.getText().toLowerCase();
-
-                                    boolean coincide = busqueda.isEmpty() || nombreCliente.contains(busqueda);
-                                    clientePanel.setVisible(coincide);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        clientesGrid.revalidate();
-        clientesGrid.repaint();
     }
 
     private JPanel createCredencialesPanel() {
@@ -1586,20 +1620,25 @@ public class EmployeeMainFrame extends JFrame {
                     JOptionPane.showMessageDialog(panel, "El formato del nuevo correo electrónico no es válido.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (!nuevoCorreoInput.equals(usuarioLogueado.getCorreo())) {
+                if ((usuarioLogueado.getCorreo() == null || usuarioLogueado.getCorreo().isEmpty()) ||
+                        (!nuevoCorreoInput.equals(usuarioLogueado.getCorreo()))) {
+                    if (UsuarioDAO.isEmailRegistered(nuevoCorreoInput)) {
+                        JOptionPane.showMessageDialog(panel, "El correo electrónico ya está registrado para otro usuario.", "Error de Registro", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                     correoParaActualizar = nuevoCorreoInput;
                     cambiosSolicitados = true;
                 }
             }
 
             if (intencionCambioTelefono) {
-                String telefonoVerificado = String.valueOf(Validations.isValidPhoneNumber(nuevoTelefonoInput));
-                if (telefonoVerificado.isEmpty()) {
+                if (!com.ferremax.util.Validations.isValidPhoneNumber(nuevoTelefonoInput)) {
                     JOptionPane.showMessageDialog(panel, "El formato del teléfono no es válido. Use solo números (7-15 dígitos) con o sin prefijo +", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (!telefonoVerificado.equals(usuarioLogueado.getTelefono())) {
-                    telefonoParaActualizar = telefonoVerificado;
+                if ((usuarioLogueado.getTelefono() == null || usuarioLogueado.getTelefono().isEmpty()) ||
+                        (!nuevoTelefonoInput.equals(usuarioLogueado.getTelefono()))) {
+                    telefonoParaActualizar = nuevoTelefonoInput;
                     cambiosSolicitados = true;
                 }
             }
@@ -1609,7 +1648,7 @@ public class EmployeeMainFrame extends JFrame {
                     JOptionPane.showMessageDialog(panel, "Debe ingresar su contraseña actual para cambiarla.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (!Objects.equals(passActualInput, usuarioLogueado.getContrasena())) {
+                if (!UsuarioDAO.verificarContrasena(usuarioLogueado.getId(), passActualInput)) {
                     JOptionPane.showMessageDialog(panel, "La contraseña actual ingresada es incorrecta.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
@@ -1623,12 +1662,14 @@ public class EmployeeMainFrame extends JFrame {
                 }
                 nuevaContrasenaParaActualizar = passNuevaInput;
                 cambiosSolicitados = true;
+
             } else {
                 if (!passActualInput.isEmpty() && !passConfirmarInput.isEmpty()) {
                     JOptionPane.showMessageDialog(panel, "Si desea cambiar la contraseña, ingrese también la nueva contraseña.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
             }
+
 
             if (!cambiosSolicitados) {
                 JOptionPane.showMessageDialog(panel, "No se ingresaron nuevos datos para actualizar o los datos son iguales a los actuales.", "Información", JOptionPane.INFORMATION_MESSAGE);
@@ -1676,12 +1717,8 @@ public class EmployeeMainFrame extends JFrame {
 
                 if (credencialesModificadas && exitoActualizacionCredenciales) {
                     if (intencionCambioCorreo && !correoParaActualizar.equals(usuarioLogueado.getCorreo() == null ? "" : usuarioLogueado.getCorreo())) {
-                        if (UsuarioDAO.isEmailRegistered(correoParaActualizar)) {
-                            JOptionPane.showMessageDialog(panel, "El correo electrónico ya está registrado para otro usuario.", "Error de Registro", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            LoginController.getUsuarioLogueado().setCorreo(correoParaActualizar);
-                            lblCorreoActualField.setText(correoParaActualizar.isEmpty() ? "Sin asignar" : correoParaActualizar);
-                        }
+                        LoginController.getUsuarioLogueado().setCorreo(correoParaActualizar);
+                        lblCorreoActualField.setText(correoParaActualizar.isEmpty() ? "Sin asignar" : correoParaActualizar);
                     }
                     if (intencionCambioTelefono && !telefonoParaActualizar.equals(usuarioLogueado.getTelefono() == null ? "" : usuarioLogueado.getTelefono())) {
                         LoginController.getUsuarioLogueado().setTelefono(telefonoParaActualizar);

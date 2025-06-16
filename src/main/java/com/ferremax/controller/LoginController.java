@@ -6,7 +6,6 @@ import com.ferremax.model.Usuario;
 import com.ferremax.security.SessionManager;
 import com.ferremax.gui.AdminMainFrame;
 import com.ferremax.gui.EmployeeMainFrame;
-import com.ferremax.util.ExceptionHandler;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.swing.JFrame;
@@ -51,10 +50,6 @@ public class LoginController {
         return switch (rol) {
             case ADMINISTRADOR -> new AdminMainFrame();
             case EMPLEADO, TECNICO -> new EmployeeMainFrame();
-            default -> {
-                ExceptionHandler.showError("Rol no reconocido", "Error");
-                yield null;
-            }
         };
     }
 

@@ -42,18 +42,6 @@ public class Solicitud {
         this.idTecnico = idTecnico;
     }
 
-    public Solicitud(String nombre, String correo, String telefono, String direccion, String fecha, String hora, String notas) {
-        this.nombreSolicitante = nombre;
-        this.correo = correo;
-        this.telefono = telefono;
-        this.direccion = direccion;
-        this.fechaSolicitud = new Date();
-        this.fechaProgramada = new Date();
-        this.horaProgramada = hora;
-        this.estado = EstadoSolicitud.PENDIENTE;
-        this.notas = notas;
-    }
-
     public int getId() {
         return id;
     }

@@ -45,34 +45,4 @@ public class DatabaseConnection {
         }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
-
-    public static void closeConnection(Connection conn) {
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                logger.warn("Error al cerrar conexión", e);
-            }
-        }
-    }
-
-    public static void closeStatement(Statement stmt) {
-        if (stmt != null) {
-            try {
-                stmt.close();
-            } catch (SQLException e) {
-                logger.warn("Error al cerrar statement", e);
-            }
-        }
-    }
-
-    public static void closeResultSet(ResultSet rs) {
-        if (rs != null) {
-            try {
-                rs.close();
-            } catch (SQLException e) {
-                logger.warn("Error al cerrar resultset", e);
-            }
-        }
-    }
 }
