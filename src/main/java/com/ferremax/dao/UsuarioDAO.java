@@ -324,24 +324,24 @@ public class UsuarioDAO {
                 "VALUES (?, ?, ?, ?, 1, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-                stmt.setString(1, usuario);
-                stmt.setString(2, nombre);
-                stmt.setString(3, correo);
-                String hashedPassword = BCrypt.hashpw(contrasena, BCrypt.gensalt());
-                stmt.setString(4, hashedPassword);
-                stmt.setTimestamp(5, new Timestamp(new Date().getTime()));
-                stmt.setBoolean(6, true);
+            stmt.setString(1, usuario);
+            stmt.setString(2, nombre);
+            stmt.setString(3, correo);
+            String hashedPassword = BCrypt.hashpw(contrasena, BCrypt.gensalt());
+            stmt.setString(4, hashedPassword);
+            stmt.setTimestamp(5, new Timestamp(new Date().getTime()));
+            stmt.setBoolean(6, true);
 
-                int affectedRows = stmt.executeUpdate();
-                return affectedRows > 0;
-            } catch (SQLException e) {
-                ExceptionHandler.logException(e, "Error al registrar administrador: " + usuario);
-                return false;
-            }
+            int affectedRows = stmt.executeUpdate();
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            ExceptionHandler.logException(e, "Error al registrar administrador: " + usuario);
+            return false;
+        }
     }
-    
+
     public static boolean checkAdminExists() {
         String sql = "SELECT COUNT(*) FROM Usuarios WHERE id_rol = 1";
 

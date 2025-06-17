@@ -203,7 +203,7 @@ public class EmployeeMainFrame extends JFrame {
         panel.setBackground(new Color(233, 236, 239));
         panel.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
 
-        JLabel lblCopyright = new JLabel("© 2025 Ferremax - Coded by Santiago & Facundo");
+        JLabel lblCopyright = new JLabel("© 2025 Ferremax - Sistema de Gestión de Aires Acondicionados");
         lblCopyright.setFont(new Font("Arial", Font.PLAIN, 12));
         panel.add(lblCopyright, BorderLayout.WEST);
 
@@ -1684,8 +1684,8 @@ public class EmployeeMainFrame extends JFrame {
                     JOptionPane.showMessageDialog(panel, "Debe ingresar su contraseña actual para confirmar los cambios de correo/teléfono.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
-                if (!Objects.equals(passActualInput, usuarioLogueado.getContrasena())) {
-                    JOptionPane.showMessageDialog(panel, "La contraseña actual es incorrecta para confirmar los cambios.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
+                if (!UsuarioDAO.verificarContrasena(usuarioLogueado.getId(), passActualInput)) {
+                    JOptionPane.showMessageDialog(panel, "La contraseña actual ingresada es incorrecta.", "Error de Autenticación", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
             }
